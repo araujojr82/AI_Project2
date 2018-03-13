@@ -35,6 +35,7 @@ void setAngle( glm::vec3 &vector, float value )
 
 cSteeringManager::cSteeringManager()
 {
+	currentTimeStep = 0.0;
 }
 
 
@@ -44,6 +45,8 @@ cSteeringManager::~cSteeringManager()
 
 void cSteeringManager::updateAll( double deltaTime )
 {
+	this->currentTimeStep = deltaTime;
+
 	cGameObject* pTargetGO = findTarget( nullptr );
 
 	for( int i = 0; i != ::g_vecGameObjects.size(); i++ )
@@ -90,52 +93,82 @@ void cSteeringManager::update( cGameObject* pTheGO, double deltaTime )
 	glm::vec3 position = pTheGO->position;
 	glm::vec3 accel = pTheGO->accel;
 
-	// Euler Integration
 	accel = limitVector( accel, MAX_FORCE );
-	float accTotal = accel.x + accel.y + accel.z;
-	if( accTotal > ( MAX_FORCE * 1.1f ) )
-	{
-		int breakpoint = 1;
-	}
-
-	// New velocity is based on acceleration over time
-	glm::vec3 deltaVelocity = ( ( float )deltaTime * accel );
-	//	+ ( ( float )deltaTime * GRAVITY );
-
-	velocity += deltaVelocity;
-
-	// Make sure velocity is not greater than maximum
+	
+	velocity += accel;
 	velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
 
-	float velTotal = velocity.x + velocity.y + velocity.z;
-	if( velTotal > ( pTheGO->maxVel * 1.10 ) )
-	{
-		int breakpoint = 1;
-	}
-
-	// New position is based on velocity over time
-	glm::vec3 deltaPosition = ( float )deltaTime * velocity;
-	position += deltaPosition;
-	//position += velocity;	
+	position += velocity;
 
 	pTheGO->vel = velocity;
 	pTheGO->position = position;
-	//pTheGO->vel = glm::vec3( 0.0f );
-	//pTheGO->accel = glm::vec3( 0.0f );
+	pTheGO->accel = glm::vec3( 0.0f );
 
-	glm::vec3 tempVel = velocity; // +position;
-	tempVel = glm::normalize( tempVel ) * 2.0f;
+	glm::vec3 tempVel = velocity;
+	//tempVel = glm::normalize( tempVel ) * 1.0f;
+	tempVel = tempVel * 10.0f;
 	tempVel += position;
 
 	::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
-	
-	//float rotation = calculateAngle( velocity );
-	//rotation = glm::radians( rotation );
 
-	//glm::vec3 rotateAngle = glm::vec3( 0.0f );
-	//rotateAngle.y = rotation;
+	//truncate( steering, MAX_FORCE );
+	//steering.scaleBy( 1 / host.getMass() );
 
-	//pTheGO->adjustQOrientationFormDeltaEuler( rotateAngle );
+	//velocity.incrementBy( steering );
+	//truncate( velocity, host.getMaxVelocity() );
+
+	//position.incrementBy( velocity );
+
+
+
+	//// Euler Integration
+	////accel = limitVector( accel, MAX_FORCE );
+	////float accTotal = accel.x + accel.y + accel.z;
+	////if( accTotal > ( MAX_FORCE * 1.1f ) )
+	////{
+	////	int breakpoint = 1;
+	////}
+
+	//// New velocity is based on acceleration over time
+	////glm::vec3 deltaVelocity = accel;
+	//glm::vec3 deltaVelocity = ( ( float )deltaTime * accel );
+	////	+ ( ( float )deltaTime * GRAVITY );
+
+	//velocity += deltaVelocity;
+
+	//// Make sure velocity is not greater than maximum
+	//velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
+	////velocity = limitVector( velocity, pTheGO->maxVel );
+
+	//float velTotal = velocity.x + velocity.y + velocity.z;
+	//if( velTotal > ( pTheGO->maxVel * 1.10 ) )
+	//{
+	//	int breakpoint = 1;
+	//}
+
+	//// New position is based on velocity over time
+	//glm::vec3 deltaPosition = /*( float )deltaTime * */velocity;
+	//position += deltaPosition;
+	////position += velocity;	
+
+	//pTheGO->vel = velocity;
+	//pTheGO->position = position;
+	////pTheGO->vel = glm::vec3( 0.0f );
+	//pTheGO->accel = glm::vec3( 0.0f );
+
+	//glm::vec3 tempVel = velocity; // +position;
+	//tempVel = glm::normalize( tempVel ) * 2.0f;
+	//tempVel += position;
+
+	//::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
+	//
+	////float rotation = calculateAngle( velocity );
+	////rotation = glm::radians( rotation );
+
+	////glm::vec3 rotateAngle = glm::vec3( 0.0f );
+	////rotateAngle.y = rotation;
+
+	////pTheGO->adjustQOrientationFormDeltaEuler( rotateAngle );
 
 	return;
 }
@@ -161,16 +194,16 @@ void cSteeringManager::setBehaviour( cGameObject* pTheGO, cGameObject* pTargetGO
 
 void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
-	float slowingRadius = 1.0f;
+	float slowingRadius = 0.2f;
 
 	//switch( pTheGO->behaviour )
 	//{
 	//	case WANDER :
-		//	pTheGO->accel += wander( pTheGO );
+			pTheGO->accel += wander( pTheGO );
 	//		break;
 
 		//case SEEK:
-			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
+		//	pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
 		//	break;
 
 		//case FLEE:
@@ -178,7 +211,7 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 		//	break;
 
 		//case PURSUE :
-		//	pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
+//			pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
 		//	break;
 
 		//case ARRIVE :
@@ -213,7 +246,7 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 	}
 	else
 	{
-		force = scaleVector( targetVec, ( pTheGO->maxVel ) );
+		force = scaleVector( targetVec, pTheGO->maxVel );
 	}
 
 	force = force - pTheGO->vel;
@@ -237,6 +270,35 @@ glm::vec3 cSteeringManager::flee( cGameObject* pTheGO, glm::vec3 targetDestinati
 
 glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 {
+	//glm::vec3 wanderForce;
+	//glm::vec3 circleCenter;
+	//glm::vec3 displacement;
+
+	//if( pTheGO->vel == glm::vec3( 0.0f ) )
+	//{
+	//	pTheGO->vel = glm::normalize( glm::vec3( generateRandomNumber( -1, 1 ),
+	//											 0.0f,
+	//											 generateRandomNumber( -1, 1 ) ) );
+	//}
+
+	//circleCenter = pTheGO->vel;
+	//glm::normalize( circleCenter );
+
+	//circleCenter = scaleVector( circleCenter, CIRCLE_DISTANCE );
+
+	//displacement = glm::vec3( 0, 0, -1 );
+	//displacement = scaleVector( displacement, CIRCLE_RADIUS );
+
+	//float wanderAngle = pTheGO->wanderAngle;
+	//setAngle( displacement, wanderAngle );
+
+	//float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
+	//pTheGO->wanderAngle = wanderAngle + newAngle;
+	//
+	//wanderForce = circleCenter + displacement;
+	//return wanderForce;
+
+
 	const float lCIRCLE_DISTANCE = 1.5;
 	const float lCIRCLE_RADIUS = 1;
 	const float lANGLE_CHANGE = 1;
@@ -265,7 +327,7 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 	float wanderAngle = pTheGO->wanderAngle;
 	
 	//float wanderAngle = glm::radians( generateRandomNumber( 0, 360 ) );
-	float newAngle = generateRandomNumber( 0, 0.99f ) * lANGLE_CHANGE - lANGLE_CHANGE * 0.5f;
+	float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
 	wanderAngle += newAngle;
 
 	setAngle( displacement, wanderAngle );
@@ -323,8 +385,9 @@ glm::vec3 cSteeringManager::pursuit( cGameObject* pTheGO, cGameObject* pTargetGO
 
 	float updatesNeeded = distance / pTheGO->maxVel;
 
-	glm::vec3 targetVel = pTargetGO->vel;
-	targetVel = scaleVector( targetVel, updatesNeeded );
+	glm::vec3 targetVel = glm::vec3( 0.0f );
+	if( pTargetGO->vel != glm::vec3( 0.0f ) )
+		targetVel = scaleVector( pTargetGO->vel, updatesNeeded );
 
 	glm::vec3 targetFuturePosition = pTargetGO->position + targetVel;
 

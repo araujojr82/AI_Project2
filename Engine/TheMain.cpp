@@ -43,7 +43,7 @@ cSteeringManager* g_pSteeringManager = NULL;
 
 float CIRCLE_DISTANCE = 3.5;
 float CIRCLE_RADIUS = 1.5;
-float ANGLE_CHANGE = 1;
+float ANGLE_CHANGE = 0.5;
 
 // Euclides: Control selected object for movement
 int g_GameObjNumber = 0;				// game object vector position number 
@@ -796,7 +796,7 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->enemyType = eEnemyType::FOLLOWER;
 				pTempGO->range = 4.0f;
 				pTempGO->health = 100.0f;
-				pTempGO->maxVel = 5.0f;
+				pTempGO->maxVel = 0.01f;
 			}
 				
 			else if( pTempGO->meshName == "circle" )
