@@ -1,5 +1,7 @@
 #include "cGameObject.h"
 
+#include <iostream>
+
 // Start the unique IDs at 1. Why not?
 /*static*/ unsigned int cGameObject::m_nextUniqueID = 1;
 
@@ -87,27 +89,75 @@ void cGameObject::adjustQOrientationFormDeltaEuler( glm::vec3 eulerAxisOrientCha
 
 glm::vec3 cGameObject::getDirectionVector()
 {
-	glm::vec3 directionVector;
-	directionVector = glm::eulerAngles( this->qOrientation );
+	glm::vec3 eulerAngles;
+
+	eulerAngles = glm::eulerAngles( this->qOrientation );
+	//eulerAngles = glm::normalize( eulerAngles );
+	//}
+
+	//return directionVector;
+
+	float movAngleDegrees;
+
+	float zDegrees = glm::degrees( eulerAngles.z );
+	float yDegrees = glm::degrees( eulerAngles.y );
+
+	if( zDegrees != 0.0f )
+	{
+		movAngleDegrees = ( zDegrees / 2 ) + ( ( zDegrees / 2 ) - abs( yDegrees ) );
+		if( yDegrees < 0 )
+		{
+			movAngleDegrees *= -1;
+		}
+	}
+	else
+	{
+		movAngleDegrees = yDegrees;
+	}
+
+	glm::vec3 directionVector = glm::vec3( 0.0f );
+	directionVector.z = glm::cos( glm::radians( movAngleDegrees ) );
+	directionVector.x = glm::sin( glm::radians( movAngleDegrees ) );
 
 	directionVector = glm::normalize( directionVector );
+	
+	//float temp = glm::atan( directionVector.x, directionVector.z );
+	//// Convert it from radians to degrees
+	//temp = glm::degrees( temp );
+
+	//std::cout << "Angle in Degrees: " << movAngleDegrees
+	//	<< " New angle in Degrees: " << temp << std::endl;
+	//	//<< " dir. vector: ( " << directionVector.x << ", "
+	//	//<< directionVector.y << ", "
+	//	//<< directionVector.z << ")"
+	//	//<< std::endl;
+
 	return directionVector;
 }
 
 bool cGameObject::isFacingMe( glm::vec3 targetDirection, glm::vec3 targetPosition )
 {
+	bool isItFacing;
+
 	// dotProduct( normalize( B - A ), normalize( directionFacingOfA ) )
-	float facing = glm::dot( glm::normalize( this->position - targetPosition ), glm::normalize( targetDirection ) );
+	float facing = glm::dot( glm::normalize( this->position - targetPosition ), targetDirection );
 
 	if( facing < 0 )	// It's not facing, looking to opposite direction
 	{
-		return false;
+		isItFacing = false;
 	}
 	else				// It's in the 180 degrees direction
 	{
 		if( facing >= 0.5f ) // It's in a 90 degrees cone
-			return true;
+			isItFacing = true;
 		else
-			return false;
+			isItFacing = false;
 	}
+
+	std::string facingText;
+	if( isItFacing ) facingText = "True";
+	else facingText = "False ";
+
+	//std::cout << "Facing: " << isItFacing << " " << facingText << " scale: " << facing << std::endl;
+	return isItFacing;
 }

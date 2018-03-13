@@ -16,13 +16,11 @@ static const float MAX_FORCE = 40.0f; // 5.4f; //10.0f;
 
 float calculateAngle( glm::vec3 vel )
 {
-	float movAngle = 0.0f;
-
 	// Calculate the moving angle using the velocity
-	movAngle = atan2( vel.x, vel.z );
+	float movAngle = glm::atan( vel.x, vel.z );
 
 	// Convert it from radians to degrees
-	movAngle = ( movAngle * 180 ) / glm::pi<float>();
+	movAngle = glm::degrees( movAngle );
 
 	return movAngle;
 }
@@ -32,9 +30,6 @@ void setAngle( glm::vec3 &vector, float value )
 	float lenght = glm::length( vector );
 	vector.x = glm::cos( value ) * lenght;
 	vector.z = glm::sin( value ) * lenght;
-
-	//vector.x = glm::cos( value );
-	//vector.z = glm::sin( value );
 }
 
 cSteeringManager::cSteeringManager()
@@ -287,10 +282,10 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 
 	force = force - pTheGO->vel;
 
-	std::cout << "Seek force: "
-		<< force.x << ", "
-		<< force.y << ", "
-		<< force.z << std::endl;
+	//std::cout << "Seek force: "
+	//	<< force.x << ", "
+	//	<< force.y << ", "
+	//	<< force.z << std::endl;
 
 	return force;
 }

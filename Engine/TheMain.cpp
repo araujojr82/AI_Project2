@@ -41,9 +41,9 @@
 
 cSteeringManager* g_pSteeringManager = NULL;
 
-float CIRCLE_DISTANCE = 2.5;
-float CIRCLE_RADIUS = 1.0;
-float ANGLE_CHANGE = 0.5;
+float CIRCLE_DISTANCE = 4.0f;
+float CIRCLE_RADIUS = 0.25f;
+float ANGLE_CHANGE = 0.5f;
 
 extern bool MOVING_FORWARD;
 extern bool MOVING_BACKWARD;
@@ -500,23 +500,23 @@ int main( void )
 
 		// Set ALL texture units and binding for ENTIRE SCENE (is faster)
 		{
-			// 0 
-			glActiveTexture( GL_TEXTURE0 );
-			glBindTexture( GL_TEXTURE_2D,
-				::g_pTextureManager->getTextureIDFromName( "vegetation_hedge_22.bmp" ) );
-			//::g_pTextureManager->getTextureIDFromName(pTheGO->textureNames[0]));
-		// 1
-			glActiveTexture( GL_TEXTURE1 );
-			glBindTexture( GL_TEXTURE_2D,
-				::g_pTextureManager->getTextureIDFromName( "Rough_rock_015_COLOR.bmp" ) );
-			// 2..  and so on... 
-			glActiveTexture( GL_TEXTURE2 );
-			glBindTexture( GL_TEXTURE_2D,
-				::g_pTextureManager->getTextureIDFromName( "Red_Marble_001_COLOR.bmp" ) );
+		//	// 0 
+		//	glActiveTexture( GL_TEXTURE0 );
+		//	glBindTexture( GL_TEXTURE_2D,
+		//		::g_pTextureManager->getTextureIDFromName( "vegetation_hedge_22.bmp" ) );
+		//	//::g_pTextureManager->getTextureIDFromName(pTheGO->textureNames[0]));
+		//// 1
+		//	glActiveTexture( GL_TEXTURE1 );
+		//	glBindTexture( GL_TEXTURE_2D,
+		//		::g_pTextureManager->getTextureIDFromName( "Rough_rock_015_COLOR.bmp" ) );
+		//	// 2..  and so on... 
+		//	glActiveTexture( GL_TEXTURE2 );
+		//	glBindTexture( GL_TEXTURE_2D,
+		//		::g_pTextureManager->getTextureIDFromName( "Red_Marble_001_COLOR.bmp" ) );
 
-			glActiveTexture( GL_TEXTURE2 );
-			glBindTexture( GL_TEXTURE_2D,
-				::g_pTextureManager->getTextureIDFromName( "checkered.bmp" ) );
+		//	glActiveTexture( GL_TEXTURE2 );
+		//	glBindTexture( GL_TEXTURE_2D,
+		//		::g_pTextureManager->getTextureIDFromName( "checkered.bmp" ) );
 
 			// Set sampler in the shader
 			// NOTE: You shouldn't be doing this during the draw call...
@@ -574,10 +574,10 @@ int main( void )
 				{
 					case ANGRY :
 						{
-							if( pTheGO->behaviour == eEnemyBehaviour::PURSUE )
+							if( pTheGO->behaviour == eEnemyBehaviour::SEEK )
 								tagCircleGO->textureNames[0] = "red.bmp";
 
-							else if( pTheGO->behaviour == eEnemyBehaviour::EVADE )
+							else if( pTheGO->behaviour == eEnemyBehaviour::FLEE )
 								tagCircleGO->textureNames[0] = "orange.bmp";
 
 							else
@@ -614,10 +614,10 @@ int main( void )
 				
 			}
 
-			if( pTheGO->meshName == "rick" )
-			{
-				addCircleToDebugRenderer( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-			}
+			//if( pTheGO->meshName == "rick" )
+			//{
+			//	addCircleToDebugRenderer( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+			//}
 
 		}//for ( int index = 0...
 		::g_pDebugRenderer->RenderDebugObjects( matView, matProjection );
@@ -875,8 +875,8 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->textureBlend[0] = 1.0f;
 				pTempGO->type = eTypeOfGO::CHARACTER;
 				pTempGO->team = eTeam::ENEMY;
-				pTempGO->enemyType = eEnemyType::FOLLOWER;
-				pTempGO->range = 4.0f;
+				pTempGO->enemyType = eEnemyType::ANGRY;
+				pTempGO->range = 6.0f;
 				pTempGO->health = 100.0f;
 				pTempGO->maxVel = 0.005f;
 			}
