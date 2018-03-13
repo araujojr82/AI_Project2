@@ -1,0 +1,4 @@
+rick       assets/models/rick.ply
+meeseeks   assets/models/meeseeks.ply
+circle     assets/models/circle.ply
+terrain    assets/models/ground_terrain.ply
