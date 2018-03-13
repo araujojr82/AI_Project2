@@ -96,7 +96,8 @@ void cSteeringManager::update( cGameObject* pTheGO, double deltaTime )
 	accel = limitVector( accel, MAX_FORCE );
 	
 	velocity += accel;
-	velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
+	//velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
+	velocity = limitVector( velocity, pTheGO->maxVel );
 
 	position += velocity;
 
@@ -203,7 +204,7 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 	//		break;
 
 		//case SEEK:
-		//	pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
+			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
 		//	break;
 
 		//case FLEE:
@@ -251,6 +252,11 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 
 	force = force - pTheGO->vel;
 
+	std::cout << "Seek force: "
+		<< force.x << ", "
+		<< force.y << ", "
+		<< force.z << std::endl;
+
 	return force;
 }
 
@@ -270,93 +276,106 @@ glm::vec3 cSteeringManager::flee( cGameObject* pTheGO, glm::vec3 targetDestinati
 
 glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 {
-	//glm::vec3 wanderForce;
-	//glm::vec3 circleCenter;
-	//glm::vec3 displacement;
-
-	//if( pTheGO->vel == glm::vec3( 0.0f ) )
-	//{
-	//	pTheGO->vel = glm::normalize( glm::vec3( generateRandomNumber( -1, 1 ),
-	//											 0.0f,
-	//											 generateRandomNumber( -1, 1 ) ) );
-	//}
-
-	//circleCenter = pTheGO->vel;
-	//glm::normalize( circleCenter );
-
-	//circleCenter = scaleVector( circleCenter, CIRCLE_DISTANCE );
-
-	//displacement = glm::vec3( 0, 0, -1 );
-	//displacement = scaleVector( displacement, CIRCLE_RADIUS );
-
-	//float wanderAngle = pTheGO->wanderAngle;
-	//setAngle( displacement, wanderAngle );
-
-	//float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
-	//pTheGO->wanderAngle = wanderAngle + newAngle;
-	//
-	//wanderForce = circleCenter + displacement;
-	//return wanderForce;
-
-
-	const float lCIRCLE_DISTANCE = 1.5;
-	const float lCIRCLE_RADIUS = 1;
-	const float lANGLE_CHANGE = 1;
-	
-	glm::vec3 force;
-
+	glm::vec3 wanderForce;
 	glm::vec3 circleCenter;
+	glm::vec3 displacement;
 
 	if( pTheGO->vel == glm::vec3( 0.0f ) )
 	{
-		pTheGO->vel = glm::vec3( generateRandomNumber( -1, 1 ),
-								 0.0f,
-								 generateRandomNumber( -1, 1 ) );
+		pTheGO->vel = glm::normalize( glm::vec3( generateRandomNumber( -1, 1 ),
+												 0.0f,
+												 generateRandomNumber( -1, 1 ) ) );
 	}
 
-	circleCenter = glm::normalize( pTheGO->vel );
+	circleCenter = pTheGO->vel;
+	glm::normalize( circleCenter );
 
 	circleCenter = scaleVector( circleCenter, CIRCLE_DISTANCE );
 
-	circleCenter += pTheGO->position;
-
-	addCircleToDebugRenderer( circleCenter, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
-
-	glm::vec3 displacement = glm::vec3( 0.0f );
-
-	float wanderAngle = pTheGO->wanderAngle;
-	
-	//float wanderAngle = glm::radians( generateRandomNumber( 0, 360 ) );
-	float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
-	wanderAngle += newAngle;
-
-	setAngle( displacement, wanderAngle );
+	displacement = glm::vec3( 0, 0, -1 );
 	displacement = scaleVector( displacement, CIRCLE_RADIUS );
 
-	displacement += circleCenter;
-	
-	::g_pDebugRenderer->addLine( circleCenter, displacement, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
+	float wanderAngle = pTheGO->wanderAngle;
+	setAngle( displacement, wanderAngle );
 
-	force = displacement; // -pTheGO->position;
+	float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
+	pTheGO->wanderAngle = wanderAngle + newAngle;
 
-	//glm::vec3 tempForce = force;
-	//tempForce = glm::normalize( tempForce ) * 2.0f;
+	wanderForce = circleCenter + displacement;
 
-	::g_pDebugRenderer->addLine( pTheGO->position, force, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
-	 
-	//force = glm::normalize( force );
+	wanderForce = scaleVector( wanderForce, pTheGO->maxVel );
 
-	glm::vec3 result = ( glm::normalize( force ) + glm::normalize( pTheGO->vel ) ) / glm::vec3( 2.0f );
-	result += pTheGO->position;
-	::g_pDebugRenderer->addLine( pTheGO->position, result, glm::vec3( 1.0f, 1.0f, 1.0f ), false );
+	std::cout << "Wander force: "
+		<< wanderForce.x << ", "
+		<< wanderForce.y << ", "
+		<< wanderForce.z << std::endl;
 
-	//pTheGO->vel = result;
+	return wanderForce;
 
-	pTheGO->wanderAngle = wanderAngle;
 
-	//force = glm::vec3( 0.0f );
-	
-	return force;
+	//const float lCIRCLE_DISTANCE = 1.5;
+	//const float lCIRCLE_RADIUS = 1;
+	//const float lANGLE_CHANGE = 1;
+	//
+	//glm::vec3 force;
+
+	//glm::vec3 circleCenter;
+
+	//if( pTheGO->vel == glm::vec3( 0.0f ) )
+	//{
+	//	pTheGO->vel = glm::vec3( generateRandomNumber( -1, 1 ),
+	//							 0.0f,
+	//							 generateRandomNumber( -1, 1 ) );
+	//}
+
+	//circleCenter = glm::normalize( pTheGO->vel );
+
+	//circleCenter = scaleVector( circleCenter, CIRCLE_DISTANCE );
+
+	//circleCenter += pTheGO->position;
+
+	//addCircleToDebugRenderer( circleCenter, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
+
+	//glm::vec3 displacement = glm::vec3( 0.0f );
+
+	//float wanderAngle = pTheGO->wanderAngle;
+	//
+	////float wanderAngle = glm::radians( generateRandomNumber( 0, 360 ) );
+	//float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
+	//wanderAngle += newAngle;
+
+	//setAngle( displacement, wanderAngle );
+	//displacement = scaleVector( displacement, CIRCLE_RADIUS );
+
+	//displacement += circleCenter;
+	//
+	//::g_pDebugRenderer->addLine( circleCenter, displacement, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
+
+	//force = displacement; // -pTheGO->position;
+
+	////glm::vec3 tempForce = force;
+	////tempForce = glm::normalize( tempForce ) * 2.0f;
+
+	//::g_pDebugRenderer->addLine( pTheGO->position, force, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
+	// 
+	////force = glm::normalize( force );
+
+	//glm::vec3 result = ( glm::normalize( force ) + glm::normalize( pTheGO->vel ) ) / glm::vec3( 2.0f );
+	//result += pTheGO->position;
+	//::g_pDebugRenderer->addLine( pTheGO->position, result, glm::vec3( 1.0f, 1.0f, 1.0f ), false );
+
+	////pTheGO->vel = result;
+
+	//pTheGO->wanderAngle = wanderAngle;
+
+	////force += pTheGO->position;
+
+	//std::cout << "Wander force: "
+	//	<< force.x << ", "
+	//	<< force.y << ", "
+	//	<< force.z << std::endl;
+	//
+	//return force;
 
 }
 
