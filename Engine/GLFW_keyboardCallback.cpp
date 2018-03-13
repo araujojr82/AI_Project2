@@ -11,10 +11,18 @@ bool isShiftKeyDown( int mods, bool bByItself = true );
 bool isCtrlKeyDown( int mods, bool bByItself = true );
 bool isAltKeyDown( int mods, bool bByItself = true );
 
+bool MOVING_FORWARD = false;
+bool MOVING_BACKWARD = false;
+bool TURNING_LEFT = false;
+bool TURNING_RIGHT = false;
+bool MOVEMENT_CHANGE = false;
+
 glm::vec3 movement = glm::vec3( 0.0f );
 
 /*static*/ void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
 {
+	MOVEMENT_CHANGE = false;
+
 	if( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
 		glfwSetWindowShouldClose( window, GLFW_TRUE );
 
@@ -225,27 +233,65 @@ glm::vec3 movement = glm::vec3( 0.0f );
 		break;
 
 	case GLFW_KEY_UP:
-		movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
-		movement *= 0.1f;
-		::g_pThePlayerGO->position += movement;
-		//::g_pTheBall->position.z += 0.1f;
+		if( action == GLFW_PRESS )
+		{
+			MOVEMENT_CHANGE = true;
+			MOVING_FORWARD = true;
+		}			
+		else if( action == GLFW_RELEASE )
+		{
+			MOVEMENT_CHANGE = true;
+			MOVING_FORWARD = false;
+		}
+			
+		//movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
+		//movement *= 0.1f;
+		//::g_pThePlayerGO->position += movement;
 		break;
 
 	case GLFW_KEY_DOWN:
-		movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
-		movement *= -0.1f;
-		::g_pThePlayerGO->position += movement;
-		//::g_pTheBall->position.z -= 0.1f;
+		if( action == GLFW_PRESS )
+		{
+			MOVEMENT_CHANGE = true;
+			MOVING_BACKWARD = true;
+		}	
+		else if( action == GLFW_RELEASE )
+		{
+			MOVEMENT_CHANGE = true;
+			MOVING_BACKWARD = false;
+		}
+		//movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
+		//movement *= -0.1f;
+		//::g_pThePlayerGO->position += movement;
 		break;
 
 	case GLFW_KEY_LEFT:
-		::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, 0.1f, 0.0f ) );
+		if( action == GLFW_PRESS )
+		{
+			MOVEMENT_CHANGE = true;
+			TURNING_LEFT = true;
+		}	
+		else if( action == GLFW_RELEASE )
+		{
+			MOVEMENT_CHANGE = true;
+			TURNING_LEFT = false;
+		}
+		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, 0.1f, 0.0f ) );
 		break;
 
-	case GLFW_KEY_RIGHT:		
-		::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, -0.1f, 0.0f ) );
+	case GLFW_KEY_RIGHT:	
+		if( action == GLFW_PRESS )
+		{
+			MOVEMENT_CHANGE = true;
+			TURNING_RIGHT = true;
+		}			
+		else if( action == GLFW_RELEASE )
+		{
+			MOVEMENT_CHANGE = true;
+			TURNING_RIGHT = false;
+		}			
+		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, -0.1f, 0.0f ) );
 		break;
-
 	}
 
 	//// HACK: print output to the console

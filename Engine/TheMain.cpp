@@ -45,6 +45,12 @@ float CIRCLE_DISTANCE = 3.5;
 float CIRCLE_RADIUS = 1.5;
 float ANGLE_CHANGE = 0.5;
 
+extern bool MOVING_FORWARD;
+extern bool MOVING_BACKWARD;
+extern bool TURNING_LEFT;
+extern bool TURNING_RIGHT;
+extern bool MOVEMENT_CHANGE;
+
 // Euclides: Control selected object for movement
 int g_GameObjNumber = 0;				// game object vector position number 
 int g_LightObjNumber = 0;				// light object vector position
@@ -138,6 +144,77 @@ static void error_callback( int error, const char* description )
 	fprintf( stderr, "Error: %s\n", description );
 }
 
+
+#include <math.h>
+
+void turn_player( double deltaTime )
+{
+
+}
+
+void move_player( double deltaTime )
+{
+	float totalVelocity = 0.0f;
+	glm::vec3 movement = glm::vec3( 0.0f );
+
+	if( isnan( ::g_pThePlayerGO->vel.x ) ) ::g_pThePlayerGO->vel.x = 0.0f;
+	if( isnan( ::g_pThePlayerGO->vel.y ) ) ::g_pThePlayerGO->vel.y = 0.0f;
+	if( isnan( ::g_pThePlayerGO->vel.z ) ) ::g_pThePlayerGO->vel.z = 0.0f;
+
+	if( MOVING_FORWARD )
+	{		
+		movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
+		movement *= 0.01f;
+		::g_pThePlayerGO->vel += movement;
+
+		if( abs( ::g_pThePlayerGO->vel.x ) < 0.001 ) ::g_pThePlayerGO->vel.x = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.y ) < 0.001 ) ::g_pThePlayerGO->vel.y = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.z ) < 0.001 ) ::g_pThePlayerGO->vel.z = 0.0f;
+		
+		totalVelocity = abs( ::g_pThePlayerGO->vel.x ) +
+			abs( ::g_pThePlayerGO->vel.y ) +
+			abs( ::g_pThePlayerGO->vel.z );
+		if( totalVelocity > ::g_pThePlayerGO->maxVel )
+		{
+			::g_pThePlayerGO->vel = glm::normalize( ::g_pThePlayerGO->vel ) * ::g_pThePlayerGO->maxVel;			
+		}
+	}
+	else if( MOVING_BACKWARD )
+	{
+		movement = glm::normalize( glm::vec3( ::g_pTheMouseCamera->Front.x, 0.0f, ::g_pTheMouseCamera->Front.z ) );
+		movement *= 0.01f;
+		::g_pThePlayerGO->vel -= movement;
+
+		if( abs( ::g_pThePlayerGO->vel.x ) < 0.001 ) ::g_pThePlayerGO->vel.x = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.y ) < 0.001 ) ::g_pThePlayerGO->vel.y = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.z ) < 0.001 ) ::g_pThePlayerGO->vel.z = 0.0f;
+
+		totalVelocity = abs( ::g_pThePlayerGO->vel.x ) +
+			abs( ::g_pThePlayerGO->vel.y ) +
+			abs( ::g_pThePlayerGO->vel.z );
+		if( totalVelocity > ::g_pThePlayerGO->maxVel )
+		{
+			::g_pThePlayerGO->vel = glm::normalize( ::g_pThePlayerGO->vel ) * ::g_pThePlayerGO->maxVel;
+		}
+	}
+	else
+	{
+		movement = ::g_pThePlayerGO->vel * 0.1f;
+		::g_pThePlayerGO->vel -= movement;
+
+		if( abs( ::g_pThePlayerGO->vel.x ) < 0.001 ) ::g_pThePlayerGO->vel.x = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.y ) < 0.001 ) ::g_pThePlayerGO->vel.y = 0.0f;
+		if( abs( ::g_pThePlayerGO->vel.z ) < 0.001 ) ::g_pThePlayerGO->vel.z = 0.0f;
+	}
+	::g_pThePlayerGO->position += ::g_pThePlayerGO->vel;
+
+	if( TURNING_LEFT )
+		::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, 0.05f, 0.0f ) );
+	if( TURNING_RIGHT )
+		::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, -0.05f, 0.0f ) );
+
+	return;
+}
 
 void addCircleToDebugRenderer( glm::vec3 position, float range, glm::vec3 color )
 {
@@ -319,6 +396,7 @@ int main( void )
 	::g_pTextureManager->Create2DTextureFromBMPFile( "orange.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "purple.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "gray.bmp", true );
+	::g_pTextureManager->Create2DTextureFromBMPFile( "green.bmp", true );
 	
 	
 	//::g_pTextureManager->SetBasePath( "assets/textures/skybox/" );
@@ -570,9 +648,12 @@ int main( void )
 		// Now many seconds that have elapsed since we last checked
 		double curTime = glfwGetTime();
 		double deltaTime = curTime - lastTimeStep;
+		
+		move_player( deltaTime );
 
 		//updateAllObjects( deltaTime );
 		::g_pSteeringManager->updateAll( deltaTime );
+
 
 		// Update camera
 		//ProcessCameraInput( window, deltaTime );
@@ -715,6 +796,7 @@ void newPlayerGO()
 	pTempGO3->team = eTeam::PLAYER;
 	pTempGO3->enemyType = eEnemyType::UNAVAIABLE;
 	pTempGO3->range = 4.0f;
+	pTempGO3->maxVel = 0.05f;
 
 	::g_vecGameObjects.push_back( pTempGO3 );
 	::g_GameObjNumber = ::g_vecGameObjects.size() - 1;
@@ -796,7 +878,7 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->enemyType = eEnemyType::FOLLOWER;
 				pTempGO->range = 4.0f;
 				pTempGO->health = 100.0f;
-				pTempGO->maxVel = 0.01f;
+				pTempGO->maxVel = 0.005f;
 			}
 				
 			else if( pTempGO->meshName == "circle" )

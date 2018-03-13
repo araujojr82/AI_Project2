@@ -204,11 +204,11 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 	//		break;
 
 		//case SEEK:
-			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
+		//	pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
 		//	break;
 
 		//case FLEE:
-		//	pTheGO->accel += flee( pTheGO, pTargetGO->position );
+			pTheGO->accel += flee( pTheGO, pTargetGO->position );
 		//	break;
 
 		//case PURSUE :
@@ -305,10 +305,15 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 	wanderForce = scaleVector( wanderForce, pTheGO->maxVel );
 
-	std::cout << "Wander force: "
-		<< wanderForce.x << ", "
-		<< wanderForce.y << ", "
-		<< wanderForce.z << std::endl;
+	::g_pDebugRenderer->addLine( pTheGO->position, ( circleCenter + pTheGO->position ), glm::vec3( 1.0f, 1.0f, 0.0f ), false );
+	addCircleToDebugRenderer( ( circleCenter + pTheGO->position ), CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
+	//::g_pDebugRenderer->addLine( ( circleCenter + pTheGO->position ), ( displacement + circleCenter ), glm::vec3( 0.0f, 1.0f, 1.0f ), false );
+	//::g_pDebugRenderer->addLine( ( circleCenter + pTheGO->position ), ( wanderForce + circleCenter ), glm::vec3( 0.0f, 1.0f, 0.0f ), false );
+
+	//std::cout << "Wander force: "
+	//	<< wanderForce.x << ", "
+	//	<< wanderForce.y << ", "
+	//	<< wanderForce.z << std::endl;
 
 	return wanderForce;
 

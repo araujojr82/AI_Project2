@@ -1,4 +1,4 @@
 rick       assets/models/rick.ply
 meeseeks   assets/models/meeseeks.ply
-circle     assets/models/circle.ply
+circle     assets/models/circle_full.ply
 terrain    assets/models/ground_terrain.ply
