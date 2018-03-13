@@ -43,7 +43,7 @@ cSteeringManager* g_pSteeringManager = NULL;
 
 float CIRCLE_DISTANCE = 4.0f;
 float CIRCLE_RADIUS = 0.25f;
-float ANGLE_CHANGE = 0.5f;
+float ANGLE_CHANGE = 0.15f;
 
 extern bool MOVING_FORWARD;
 extern bool MOVING_BACKWARD;
@@ -797,6 +797,7 @@ void newPlayerGO()
 	pTempGO3->enemyType = eEnemyType::UNAVAIABLE;
 	pTempGO3->range = 4.0f;
 	pTempGO3->maxVel = 0.05f;
+	pTempGO3->health = 100.0f;
 
 	::g_vecGameObjects.push_back( pTempGO3 );
 	::g_GameObjNumber = ::g_vecGameObjects.size() - 1;

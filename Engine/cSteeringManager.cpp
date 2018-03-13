@@ -109,64 +109,10 @@ void cSteeringManager::update( cGameObject* pTheGO, double deltaTime )
 
 	::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
 
-	//truncate( steering, MAX_FORCE );
-	//steering.scaleBy( 1 / host.getMass() );
-
-	//velocity.incrementBy( steering );
-	//truncate( velocity, host.getMaxVelocity() );
-
-	//position.incrementBy( velocity );
-
-
-
-	//// Euler Integration
-	////accel = limitVector( accel, MAX_FORCE );
-	////float accTotal = accel.x + accel.y + accel.z;
-	////if( accTotal > ( MAX_FORCE * 1.1f ) )
-	////{
-	////	int breakpoint = 1;
-	////}
-
-	//// New velocity is based on acceleration over time
-	////glm::vec3 deltaVelocity = accel;
-	//glm::vec3 deltaVelocity = ( ( float )deltaTime * accel );
-	////	+ ( ( float )deltaTime * GRAVITY );
-
-	//velocity += deltaVelocity;
-
-	//// Make sure velocity is not greater than maximum
-	//velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
-	////velocity = limitVector( velocity, pTheGO->maxVel );
-
-	//float velTotal = velocity.x + velocity.y + velocity.z;
-	//if( velTotal > ( pTheGO->maxVel * 1.10 ) )
-	//{
-	//	int breakpoint = 1;
-	//}
-
-	//// New position is based on velocity over time
-	//glm::vec3 deltaPosition = /*( float )deltaTime * */velocity;
-	//position += deltaPosition;
-	////position += velocity;	
-
-	//pTheGO->vel = velocity;
-	//pTheGO->position = position;
-	////pTheGO->vel = glm::vec3( 0.0f );
-	//pTheGO->accel = glm::vec3( 0.0f );
-
-	//glm::vec3 tempVel = velocity; // +position;
-	//tempVel = glm::normalize( tempVel ) * 2.0f;
-	//tempVel += position;
-
-	//::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
-	//
-	////float rotation = calculateAngle( velocity );
-	////rotation = glm::radians( rotation );
-
-	////glm::vec3 rotateAngle = glm::vec3( 0.0f );
-	////rotateAngle.y = rotation;
-
-	////pTheGO->adjustQOrientationFormDeltaEuler( rotateAngle );
+	float rotation = calculateAngle( velocity );
+	rotation = glm::radians( rotation );
+	glm::vec3 rotateAngle = glm::vec3( 0.0f, rotation, 0.0f );
+	pTheGO->overwrtiteQOrientationFormEuler( rotateAngle );
 
 	return;
 }
@@ -187,32 +133,63 @@ cGameObject * cSteeringManager::findTarget( cGameObject* pTheGO )
 
 void cSteeringManager::setBehaviour( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
-	bool bPlayerIsFacingMe = pTheGO->isFacingMe( pTargetGO->getDirectionVector(), pTargetGO->position );
-	
-	bool bIsPlayerInRange = false;
 	float distanceFromThePlayer = glm::distance( pTheGO->position, pTargetGO->position );
+	float playerHealth = pTargetGO->health;
 
+	bool bPlayerIsFacingMe = pTheGO->isFacingMe( pTargetGO->getDirectionVector(), pTargetGO->position );	
+	bool bIsPlayerInRange = false;
 	if( distanceFromThePlayer <= pTheGO->range ) bIsPlayerInRange = true;
 
-	if( bIsPlayerInRange )
+	switch( pTheGO->enemyType )
 	{
-		if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::FLEE;
-		else					pTheGO->behaviour = eEnemyBehaviour::SEEK;
-	}
-	else
-	{
-		pTheGO->behaviour = eEnemyBehaviour::IDLE;
-	}
+		case ANGRY :
+			if( playerHealth < 25.0f )
+			{
+				pTheGO->behaviour = eEnemyBehaviour::SEEK;
+			}
+			else
+			{
+				if( bIsPlayerInRange )
+				{
+					if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::FLEE;
+					else					pTheGO->behaviour = eEnemyBehaviour::SEEK;
+				}
+				else
+				{
+					pTheGO->behaviour = eEnemyBehaviour::IDLE;
+				}
+			}
+			break;
 
-//eEnemyBehaviour::WANDER
-//eEnemyBehaviour::SEEK
-//eEnemyBehaviour::FLEE
-//eEnemyBehaviour::PURSUE
-//eEnemyBehaviour::ARRIVE
-//eEnemyBehaviour::APPROACH
-//eEnemyBehaviour::EVADE
-//eEnemyBehaviour::IDLE
-//eEnemyBehaviour::NA
+		case CURIOUS :
+			if( bIsPlayerInRange )
+			{
+				if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::EVADE;
+				else					pTheGO->behaviour = eEnemyBehaviour::APPROACH;
+			}
+			else
+			{
+				pTheGO->behaviour = eEnemyBehaviour::IDLE;
+			}
+			break;
+
+		case FOLLOWER :
+			if( bIsPlayerInRange )
+			{
+				pTheGO->behaviour = eEnemyBehaviour::SEEK;
+			}
+			else
+			{
+				pTheGO->behaviour = eEnemyBehaviour::IDLE;
+			}
+			break;
+
+		default:
+			pTheGO->behaviour = eEnemyBehaviour::IDLE;
+			break;
+	}
+	
+	return;
 }
 
 void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetGO )
@@ -228,12 +205,12 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 			break;
 
 		case SEEK:
-			pTheGO->accel += wander( pTheGO );
+			//pTheGO->accel += wander( pTheGO );
 			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
 			break;
 
 		case FLEE:
-			pTheGO->accel += wander( pTheGO );
+			//pTheGO->accel += wander( pTheGO );
 			pTheGO->accel += flee( pTheGO, pTargetGO->position );
 			break;
 
