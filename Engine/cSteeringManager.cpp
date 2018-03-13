@@ -29,8 +29,12 @@ float calculateAngle( glm::vec3 vel )
 
 void setAngle( glm::vec3 &vector, float value )
 {
-	vector.x = glm::cos( value );
-	vector.z = glm::sin( value );
+	float lenght = glm::length( vector );
+	vector.x = glm::cos( value ) * lenght;
+	vector.z = glm::sin( value ) * lenght;
+
+	//vector.x = glm::cos( value );
+	//vector.z = glm::sin( value );
 }
 
 cSteeringManager::cSteeringManager()
@@ -67,17 +71,17 @@ void cSteeringManager::reset()
 
 glm::vec3 limitVector( glm::vec3 currentVector, float maximum )
 {
-	float velTotal = currentVector.x + currentVector.y + currentVector.z;
-	if( velTotal > maximum )
-	{
+	float velTotal = abs(currentVector.x) + abs( currentVector.y ) + abs( currentVector.z );
+	//if( velTotal > maximum )
+	//{
 		glm::vec3 newVector = glm::vec3( ( currentVector.x / velTotal ) * maximum,
 										 ( currentVector.y / velTotal ) * maximum,
 										 ( currentVector.z / velTotal ) * maximum );
 
 		return newVector;
-	}
-	else
-		return currentVector;
+	//}
+	//else
+	//	return currentVector;
 }
 
 glm::vec3 scaleVector( glm::vec3 currentVector, float maximum )
@@ -105,9 +109,7 @@ void cSteeringManager::update( cGameObject* pTheGO, double deltaTime )
 	pTheGO->position = position;
 	pTheGO->accel = glm::vec3( 0.0f );
 
-	glm::vec3 tempVel = velocity;
-	//tempVel = glm::normalize( tempVel ) * 1.0f;
-	tempVel = tempVel * 10.0f;
+	glm::vec3 tempVel = velocity * 1000.0f; // scaleVector( ( velocity + position ), 1.0f );
 	tempVel += position;
 
 	::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
@@ -190,46 +192,79 @@ cGameObject * cSteeringManager::findTarget( cGameObject* pTheGO )
 
 void cSteeringManager::setBehaviour( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
+	bool bPlayerIsFacingMe = pTheGO->isFacingMe( pTargetGO->getDirectionVector(), pTargetGO->position );
+	
+	bool bIsPlayerInRange = false;
+	float distanceFromThePlayer = glm::distance( pTheGO->position, pTargetGO->position );
 
+	if( distanceFromThePlayer <= pTheGO->range ) bIsPlayerInRange = true;
+
+	if( bIsPlayerInRange )
+	{
+		if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::FLEE;
+		else					pTheGO->behaviour = eEnemyBehaviour::SEEK;
+	}
+	else
+	{
+		pTheGO->behaviour = eEnemyBehaviour::IDLE;
+	}
+
+//eEnemyBehaviour::WANDER
+//eEnemyBehaviour::SEEK
+//eEnemyBehaviour::FLEE
+//eEnemyBehaviour::PURSUE
+//eEnemyBehaviour::ARRIVE
+//eEnemyBehaviour::APPROACH
+//eEnemyBehaviour::EVADE
+//eEnemyBehaviour::IDLE
+//eEnemyBehaviour::NA
 }
 
 void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
 	float slowingRadius = 0.2f;
 
-	//switch( pTheGO->behaviour )
-	//{
-	//	case WANDER :
+	pTheGO->accel += wander( pTheGO );
+
+	switch( pTheGO->behaviour )
+	{
+		case WANDER :
 			pTheGO->accel += wander( pTheGO );
-	//		break;
+			break;
 
-		//case SEEK:
-		//	pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
-		//	break;
+		case SEEK:
+			pTheGO->accel += wander( pTheGO );
+			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
+			break;
 
-		//case FLEE:
+		case FLEE:
+			pTheGO->accel += wander( pTheGO );
 			pTheGO->accel += flee( pTheGO, pTargetGO->position );
-		//	break;
+			break;
 
-		//case PURSUE :
-//			pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
-		//	break;
+		case PURSUE :
+			//pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
+			break;
 
-		//case ARRIVE :
+		case ARRIVE :
 
-		//	break;
+			break;
 
-		//case APPROACH :
+		case APPROACH :
 
-		//	break;
+			break;
 
-		//case EVADE :
-		//	pTheGO->accel += evade( pTheGO, pTargetGO );
-		//	break;
+		case EVADE :
+			//pTheGO->accel += evade( pTheGO, pTargetGO );
+			break;
 
-		//default:
-		//	break;
-	//}
+		case IDLE:
+			pTheGO->accel += wander( pTheGO );
+			break;
+
+		default:
+			break;
+	}
 }
 
 glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestination, float slowingRadius )
@@ -305,83 +340,15 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 	wanderForce = scaleVector( wanderForce, pTheGO->maxVel );
 
-	::g_pDebugRenderer->addLine( pTheGO->position, ( circleCenter + pTheGO->position ), glm::vec3( 1.0f, 1.0f, 0.0f ), false );
-	addCircleToDebugRenderer( ( circleCenter + pTheGO->position ), CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
-	//::g_pDebugRenderer->addLine( ( circleCenter + pTheGO->position ), ( displacement + circleCenter ), glm::vec3( 0.0f, 1.0f, 1.0f ), false );
-	//::g_pDebugRenderer->addLine( ( circleCenter + pTheGO->position ), ( wanderForce + circleCenter ), glm::vec3( 0.0f, 1.0f, 0.0f ), false );
+	glm::vec3 displacementPos = displacement + circleCenter + pTheGO->position;
+	glm::vec3 circleCenterPos = circleCenter + pTheGO->position;
 
-	//std::cout << "Wander force: "
-	//	<< wanderForce.x << ", "
-	//	<< wanderForce.y << ", "
-	//	<< wanderForce.z << std::endl;
+	//::g_pDebugRenderer->addLine( pTheGO->position, ( circleCenter + pTheGO->position ), glm::vec3( 1.0f, 1.0f, 0.0f ), false );
+	addCircleToDebugRenderer( circleCenterPos, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
+	::g_pDebugRenderer->addLine( circleCenterPos, displacementPos, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
+	::g_pDebugRenderer->addLine( pTheGO->position, displacementPos, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
 
 	return wanderForce;
-
-
-	//const float lCIRCLE_DISTANCE = 1.5;
-	//const float lCIRCLE_RADIUS = 1;
-	//const float lANGLE_CHANGE = 1;
-	//
-	//glm::vec3 force;
-
-	//glm::vec3 circleCenter;
-
-	//if( pTheGO->vel == glm::vec3( 0.0f ) )
-	//{
-	//	pTheGO->vel = glm::vec3( generateRandomNumber( -1, 1 ),
-	//							 0.0f,
-	//							 generateRandomNumber( -1, 1 ) );
-	//}
-
-	//circleCenter = glm::normalize( pTheGO->vel );
-
-	//circleCenter = scaleVector( circleCenter, CIRCLE_DISTANCE );
-
-	//circleCenter += pTheGO->position;
-
-	//addCircleToDebugRenderer( circleCenter, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
-
-	//glm::vec3 displacement = glm::vec3( 0.0f );
-
-	//float wanderAngle = pTheGO->wanderAngle;
-	//
-	////float wanderAngle = glm::radians( generateRandomNumber( 0, 360 ) );
-	//float newAngle = generateRandomNumber( 0, 0.99f ) * ANGLE_CHANGE - ANGLE_CHANGE * 0.5f;
-	//wanderAngle += newAngle;
-
-	//setAngle( displacement, wanderAngle );
-	//displacement = scaleVector( displacement, CIRCLE_RADIUS );
-
-	//displacement += circleCenter;
-	//
-	//::g_pDebugRenderer->addLine( circleCenter, displacement, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
-
-	//force = displacement; // -pTheGO->position;
-
-	////glm::vec3 tempForce = force;
-	////tempForce = glm::normalize( tempForce ) * 2.0f;
-
-	//::g_pDebugRenderer->addLine( pTheGO->position, force, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
-	// 
-	////force = glm::normalize( force );
-
-	//glm::vec3 result = ( glm::normalize( force ) + glm::normalize( pTheGO->vel ) ) / glm::vec3( 2.0f );
-	//result += pTheGO->position;
-	//::g_pDebugRenderer->addLine( pTheGO->position, result, glm::vec3( 1.0f, 1.0f, 1.0f ), false );
-
-	////pTheGO->vel = result;
-
-	//pTheGO->wanderAngle = wanderAngle;
-
-	////force += pTheGO->position;
-
-	//std::cout << "Wander force: "
-	//	<< force.x << ", "
-	//	<< force.y << ", "
-	//	<< force.z << std::endl;
-	//
-	//return force;
-
 }
 
 glm::vec3 cSteeringManager::evade( cGameObject* pTheGO, cGameObject* pTargetGO )

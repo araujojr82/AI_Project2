@@ -41,8 +41,8 @@
 
 cSteeringManager* g_pSteeringManager = NULL;
 
-float CIRCLE_DISTANCE = 3.5;
-float CIRCLE_RADIUS = 1.5;
+float CIRCLE_DISTANCE = 2.5;
+float CIRCLE_RADIUS = 1.0;
 float ANGLE_CHANGE = 0.5;
 
 extern bool MOVING_FORWARD;

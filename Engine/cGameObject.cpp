@@ -84,3 +84,30 @@ void cGameObject::adjustQOrientationFormDeltaEuler( glm::vec3 eulerAxisOrientCha
 
 	return;
 }
+
+glm::vec3 cGameObject::getDirectionVector()
+{
+	glm::vec3 directionVector;
+	directionVector = glm::eulerAngles( this->qOrientation );
+
+	directionVector = glm::normalize( directionVector );
+	return directionVector;
+}
+
+bool cGameObject::isFacingMe( glm::vec3 targetDirection, glm::vec3 targetPosition )
+{
+	// dotProduct( normalize( B - A ), normalize( directionFacingOfA ) )
+	float facing = glm::dot( glm::normalize( this->position - targetPosition ), glm::normalize( targetDirection ) );
+
+	if( facing < 0 )	// It's not facing, looking to opposite direction
+	{
+		return false;
+	}
+	else				// It's in the 180 degrees direction
+	{
+		if( facing >= 0.5f ) // It's in a 90 degrees cone
+			return true;
+		else
+			return false;
+	}
+}

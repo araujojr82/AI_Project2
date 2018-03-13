@@ -276,7 +276,8 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			MOVEMENT_CHANGE = true;
 			TURNING_LEFT = false;
 		}
-		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, 0.1f, 0.0f ) );
+		//if( action == GLFW_PRESS )
+		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, glm::radians(90.0f), 0.0f ) );
 		break;
 
 	case GLFW_KEY_RIGHT:	
@@ -290,7 +291,9 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			MOVEMENT_CHANGE = true;
 			TURNING_RIGHT = false;
 		}			
+		//if( action == GLFW_PRESS )
 		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, -0.1f, 0.0f ) );
+		//::g_pThePlayerGO->adjustQOrientationFormDeltaEuler( glm::vec3( 0.0f, glm::radians( -90.0f ), 0.0f ) );
 		break;
 	}
 

@@ -42,7 +42,8 @@ enum eEnemyBehaviour
 	ARRIVE,
 	APPROACH,
 	EVADE,
-	NA = 3
+	IDLE, 
+	NA
 };
 
 enum eTypeOfObject
@@ -78,6 +79,9 @@ public:
 	void adjustQOrientationFormDeltaEuler( glm::vec3 eulerAxisOrientChange );
 	glm::quat qOrientation;
 	glm::quat prevOrientation;
+
+	glm::vec3 getDirectionVector();
+	bool isFacingMe( glm::vec3 targetDirection, glm::vec3 targetPosition );
 
 	float scale;
 
