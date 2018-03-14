@@ -67,16 +67,16 @@ void cSteeringManager::reset()
 glm::vec3 limitVector( glm::vec3 currentVector, float maximum )
 {
 	float velTotal = abs(currentVector.x) + abs( currentVector.y ) + abs( currentVector.z );
-	//if( velTotal > maximum )
-	//{
+	if( velTotal > maximum )
+	{
 		glm::vec3 newVector = glm::vec3( ( currentVector.x / velTotal ) * maximum,
 										 ( currentVector.y / velTotal ) * maximum,
 										 ( currentVector.z / velTotal ) * maximum );
 
 		return newVector;
-	//}
-	//else
-	//	return currentVector;
+	}
+	else
+		return currentVector;
 }
 
 glm::vec3 scaleVector( glm::vec3 currentVector, float maximum )
@@ -93,26 +93,41 @@ void cSteeringManager::update( cGameObject* pTheGO, double deltaTime )
 	glm::vec3 accel = pTheGO->accel;
 
 	accel = limitVector( accel, MAX_FORCE );
-	
-	velocity += accel;
-	//velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
-	velocity = limitVector( velocity, pTheGO->maxVel );
 
-	position += velocity;
+	if( !isnan( accel.x ) && !isnan( accel.y ) && !isnan( accel.z ) )
+	{
+		velocity += accel;
+		//velocity = limitVector( velocity, ( pTheGO->maxVel * deltaTime ) );
+		velocity = limitVector( velocity, pTheGO->maxVel );
+	}
+
+	if( !isnan( velocity.x ) && !isnan( velocity.y ) && !isnan( velocity.z ) )
+	{
+		position += ( velocity * (float) deltaTime );
+	}
 
 	pTheGO->vel = velocity;
 	pTheGO->position = position;
 	pTheGO->accel = glm::vec3( 0.0f );
 
-	glm::vec3 tempVel = velocity * 1000.0f; // scaleVector( ( velocity + position ), 1.0f );
-	tempVel += position;
+	//float velTotal = abs( velocity.x ) + abs( velocity.y ) + abs( velocity.z );
+	//if( velTotal < 0.01f ) 
+	//	pTheGO->vel = glm::vec3( 0.0f );
 
-	::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
+	if( !isnan( velocity.x ) && !isnan( velocity.y ) && !isnan( velocity.z ) && velocity != glm::vec3( 0.0f ) )
+	{
+		glm::vec3 tempVel = velocity * 1.0f; // scaleVector( ( velocity + position ), 1.0f );
+		tempVel += position;
+		::g_pDebugRenderer->addLine( position, tempVel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
+	}
 
-	float rotation = calculateAngle( velocity );
-	rotation = glm::radians( rotation );
-	glm::vec3 rotateAngle = glm::vec3( 0.0f, rotation, 0.0f );
-	pTheGO->overwrtiteQOrientationFormEuler( rotateAngle );
+	if( !isnan( velocity.x ) && !isnan( velocity.y ) && !isnan( velocity.z ) )
+	{
+		float rotation = calculateAngle( velocity );
+		rotation = glm::radians( rotation );
+		glm::vec3 rotateAngle = glm::vec3( 0.0f, rotation, 0.0f );
+		pTheGO->overwrtiteQOrientationFormEuler( rotateAngle );
+	}
 
 	return;
 }
@@ -164,8 +179,12 @@ void cSteeringManager::setBehaviour( cGameObject* pTheGO, cGameObject* pTargetGO
 		case CURIOUS :
 			if( bIsPlayerInRange )
 			{
+				//if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::EVADE;
+				//else					pTheGO->behaviour = eEnemyBehaviour::APPROACH;
+
 				if( bPlayerIsFacingMe )	pTheGO->behaviour = eEnemyBehaviour::EVADE;
 				else					pTheGO->behaviour = eEnemyBehaviour::APPROACH;
+
 			}
 			else
 			{
@@ -194,9 +213,9 @@ void cSteeringManager::setBehaviour( cGameObject* pTheGO, cGameObject* pTargetGO
 
 void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
-	float slowingRadius = 0.2f;
+	float slowingRadius = 2.0f;
 
-	pTheGO->accel += wander( pTheGO );
+	//pTheGO->accel += wander( pTheGO );
 
 	switch( pTheGO->behaviour )
 	{
@@ -205,17 +224,15 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 			break;
 
 		case SEEK:
-			//pTheGO->accel += wander( pTheGO );
 			pTheGO->accel += seek( pTheGO, pTargetGO->position, slowingRadius );
 			break;
 
 		case FLEE:
-			//pTheGO->accel += wander( pTheGO );
 			pTheGO->accel += flee( pTheGO, pTargetGO->position );
 			break;
 
 		case PURSUE :
-			//pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
+			pTheGO->accel += pursuit( pTheGO, pTargetGO, slowingRadius );
 			break;
 
 		case ARRIVE :
@@ -223,15 +240,16 @@ void cSteeringManager::solveSteering( cGameObject* pTheGO, cGameObject* pTargetG
 			break;
 
 		case APPROACH :
-
+			pTheGO->accel += approach( pTheGO, pTargetGO->position, slowingRadius );
 			break;
 
 		case EVADE :
-			//pTheGO->accel += evade( pTheGO, pTargetGO );
+			pTheGO->accel += evade( pTheGO, pTargetGO );
 			break;
 
 		case IDLE:
 			pTheGO->accel += wander( pTheGO );
+			//pTheGO->accel -= pTheGO->vel;
 			break;
 
 		default:
@@ -247,6 +265,8 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 	float distance = glm::length( targetVec );
 	targetVec = glm::normalize( targetVec );
 
+	addCircleToDebugRenderer( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+
 	if( distance <= slowingRadius )
 	{
 		float limit = pTheGO->maxVel * distance / slowingRadius;
@@ -258,11 +278,6 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 	}
 
 	force = force - pTheGO->vel;
-
-	//std::cout << "Seek force: "
-	//	<< force.x << ", "
-	//	<< force.y << ", "
-	//	<< force.z << std::endl;
 
 	return force;
 }
@@ -289,9 +304,9 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 	if( pTheGO->vel == glm::vec3( 0.0f ) )
 	{
-		pTheGO->vel = glm::normalize( glm::vec3( generateRandomNumber( -1, 1 ),
-												 0.0f,
-												 generateRandomNumber( -1, 1 ) ) );
+		pTheGO->vel = glm::vec3( generateRandomNumber( -0.1, 0.1 ),
+								 0.0f,
+								 generateRandomNumber( -0.1, 0.1 ) );
 	}
 
 	circleCenter = pTheGO->vel;
@@ -310,12 +325,12 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 	wanderForce = circleCenter + displacement;
 
-	wanderForce = scaleVector( wanderForce, pTheGO->maxVel );
+	wanderForce = scaleVector( wanderForce, ( pTheGO->maxVel / 200 ) );
 
 	glm::vec3 displacementPos = displacement + circleCenter + pTheGO->position;
 	glm::vec3 circleCenterPos = circleCenter + pTheGO->position;
 
-	//::g_pDebugRenderer->addLine( pTheGO->position, ( circleCenter + pTheGO->position ), glm::vec3( 1.0f, 1.0f, 0.0f ), false );
+	::g_pDebugRenderer->addLine( pTheGO->position, circleCenterPos, glm::vec3( 1.0f, 1.0f, 0.0f ), false );
 	addCircleToDebugRenderer( circleCenterPos, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
 	::g_pDebugRenderer->addLine( circleCenterPos, displacementPos, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
 	::g_pDebugRenderer->addLine( pTheGO->position, displacementPos, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
@@ -325,20 +340,23 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 glm::vec3 cSteeringManager::evade( cGameObject* pTheGO, cGameObject* pTargetGO )
 {
-	//glm::vec3 force;
-
 	glm::vec3 targetVec = pTargetGO->position - pTheGO->position;
 	float distance = glm::length( targetVec );	
 
-	float updatesNeeded = distance / pTheGO->maxVel;
+	float updatesNeeded = ( distance / ( pTheGO->maxVel * 10 ) ) * ( float )this->currentTimeStep;
 
-	glm::vec3 targetVel = pTargetGO->vel;
+	glm::vec3 targetVel = pTargetGO->vel; // ( float )this->currentTimeStep;
 	
-	targetVel = scaleVector( targetVel, updatesNeeded );
-
-	glm::vec3 targetFuturePosition = pTargetGO->position + targetVel;
-
-	return flee( pTheGO, targetFuturePosition );
+	if( targetVel != glm::vec3( 0.0f ) )
+	{
+		targetVel = scaleVector( targetVel, updatesNeeded );	
+		glm::vec3 targetFuturePosition = pTargetGO->position + targetVel;
+		return flee( pTheGO, targetFuturePosition );
+	}
+	else
+	{
+		return flee( pTheGO, pTargetGO->position );
+	}
 }
 
 glm::vec3 cSteeringManager::pursuit( cGameObject* pTheGO, cGameObject* pTargetGO, float slowingRadius )
@@ -355,4 +373,29 @@ glm::vec3 cSteeringManager::pursuit( cGameObject* pTheGO, cGameObject* pTargetGO
 	glm::vec3 targetFuturePosition = pTargetGO->position + targetVel;
 
 	return seek( pTheGO, targetFuturePosition, slowingRadius );
+}
+
+glm::vec3 cSteeringManager::approach( cGameObject* pTheGO, glm::vec3 targetDestination, float slowingRadius )
+{
+	glm::vec3 force;
+
+	glm::vec3 targetVec = targetDestination - pTheGO->position;
+	float distance = glm::length( targetVec );
+	targetVec = glm::normalize( targetVec );
+
+	addCircleToDebugRenderer( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+
+	if( distance <= slowingRadius )
+	{
+		float limit = ( pTheGO->maxVel * distance / slowingRadius ) / 10.0f ;
+		force = scaleVector( targetVec, limit );
+	}
+	else
+	{
+		force = scaleVector( targetVec, pTheGO->maxVel );
+	}
+
+	force = force - pTheGO->vel;
+
+	return force;
 }

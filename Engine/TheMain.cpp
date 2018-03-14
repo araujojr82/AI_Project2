@@ -42,7 +42,7 @@
 cSteeringManager* g_pSteeringManager = NULL;
 
 float CIRCLE_DISTANCE = 4.0f;
-float CIRCLE_RADIUS = 0.25f;
+float CIRCLE_RADIUS = 2.0f;
 float ANGLE_CHANGE = 0.15f;
 
 extern bool MOVING_FORWARD;
@@ -388,6 +388,7 @@ int main( void )
 	{
 		std::cout << "Texture is loaded! Hazzah!" << std::endl;
 	}
+	::g_pTextureManager->Create2DTextureFromBMPFile( "scarry.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "meeseeks.bmp", true );		
 	::g_pTextureManager->Create2DTextureFromBMPFile( "moon.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "red.bmp", true );	
@@ -869,6 +870,18 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->team = eTeam::PLAYER;
 				pTempGO->enemyType = eEnemyType::UNAVAIABLE;
 			}
+
+			else if( pTempGO->meshName == "scarry" )
+			{
+				pTempGO->textureNames[0] = "scarry.bmp";
+				pTempGO->textureBlend[0] = 1.0f;
+				pTempGO->type = eTypeOfGO::CHARACTER;
+				pTempGO->team = eTeam::ENEMY;
+				pTempGO->enemyType = eEnemyType::ANGRY;
+				pTempGO->range = 6.0f;
+				pTempGO->health = 100.0f;
+				pTempGO->maxVel = 1.5f;
+			}
 				
 			else if( pTempGO->meshName == "meeseeks" )
 			{
@@ -876,10 +889,10 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->textureBlend[0] = 1.0f;
 				pTempGO->type = eTypeOfGO::CHARACTER;
 				pTempGO->team = eTeam::ENEMY;
-				pTempGO->enemyType = eEnemyType::ANGRY;
+				pTempGO->enemyType = eEnemyType::CURIOUS;
 				pTempGO->range = 6.0f;
 				pTempGO->health = 100.0f;
-				pTempGO->maxVel = 0.005f;
+				pTempGO->maxVel = 1.5f;
 			}
 				
 			else if( pTempGO->meshName == "circle" )

@@ -23,6 +23,7 @@ private:
 	glm::vec3 wander( cGameObject* pTheGO );
 	glm::vec3 evade( cGameObject* pTheGO, cGameObject* pTargetGO );
 	glm::vec3 pursuit( cGameObject* pTheGO, cGameObject* pTargetGO, float slowingRadius );
+	glm::vec3 approach( cGameObject* pTheGO, glm::vec3 targetDestination, float slowingRadius );
 
 	double currentTimeStep;
 };
