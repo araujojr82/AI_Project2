@@ -39,6 +39,12 @@
 
 //#include "cSteeringManager.h"
 
+// The Game Boundaries:
+const float maxX = 15.0f;
+const float minX = -15.0f;
+const float maxZ = 15.0f;
+const float minZ = -15.0f;
+
 cSteeringManager* g_pSteeringManager = NULL;
 
 extern bool MOVING_FORWARD;
@@ -212,43 +218,63 @@ void move_player( double deltaTime )
 	return;
 }
 
-//void addCircleToDebugRenderer( glm::vec3 position, float range, glm::vec3 color )
+//void drawRuler()
 //{
-//	glm::vec3 point0 = glm::vec3( position.x, 0.0f, position.z + range );
-//	glm::vec3 point3 = glm::vec3( position.x + range, 0.0f, position.z );
-//	glm::vec3 point6 = glm::vec3( position.x, 0.0f, position.z - range );
-//	glm::vec3 point9 = glm::vec3( position.x - range, 0.0f, position.z );
+//	glm::vec3 color = glm::vec3( 1.0f );
 //
-//	float x30 = glm::cos( glm::radians( 30.0f ) ) * range;
-//	float z30 = glm::sin( glm::radians( 30.0f ) ) * range;
-//	float x60 = glm::cos( glm::radians( 60.0f ) ) * range;
-//	float z60 = glm::sin( glm::radians( 60.0f ) ) * range;
+//	glm::vec3 thePoint = glm::vec3( 0.0f );
+//	glm::vec3 thePointUp = glm::vec3( 0.0f );
 //
-//	glm::vec3 point1 = glm::vec3( position.x + x60, 0.0f, position.z + z60 );
-//	glm::vec3 point2 = glm::vec3( position.x + x30, 0.0f, position.z + z30 );
-//	glm::vec3 point4 = glm::vec3( position.x + x30, 0.0f, position.z - z30 );
-//	glm::vec3 point5 = glm::vec3( position.x + x60, 0.0f, position.z - z60 );
-//	glm::vec3 point7 = glm::vec3( position.x - x60, 0.0f, position.z - z60 );
-//	glm::vec3 point8 = glm::vec3( position.x - x30, 0.0f, position.z - z30 );
-//	glm::vec3 point10 = glm::vec3( position.x - x30, 0.0f, position.z + z30 );
-//	glm::vec3 point11 = glm::vec3( position.x - x60, 0.0f, position.z + z60 );
+//	::g_pDebugRenderer->addLine( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 15.0f, 0.0f, 0.0f ), color, false );
+//	
+//	for( int x = 0; x <= 15; x++ )
+//	{
+//		thePoint.x = ( float )x;
+//		thePointUp.x = ( float )x;
+//		thePointUp.z = 1.0f;
 //
-//	::g_pDebugRenderer->addLine( point0, point1, color, false );
-//	::g_pDebugRenderer->addLine( point1, point2, color, false );
-//	::g_pDebugRenderer->addLine( point2, point3, color, false );
-//	::g_pDebugRenderer->addLine( point3, point4, color, false );
-//	::g_pDebugRenderer->addLine( point4, point5, color, false );
-//	::g_pDebugRenderer->addLine( point5, point6, color, false );
-//	::g_pDebugRenderer->addLine( point6, point7, color, false );
-//	::g_pDebugRenderer->addLine( point7, point8, color, false );
-//	::g_pDebugRenderer->addLine( point8, point9, color, false );
-//	::g_pDebugRenderer->addLine( point9, point10, color, false );
-//	::g_pDebugRenderer->addLine( point10, point11, color, false );
-//	::g_pDebugRenderer->addLine( point11, point0, color, false );
+//		::g_pDebugRenderer->addLine( thePoint, thePointUp, color, false );	
+//	}
 //
-//	return;
 //}
 
+void drawRange()
+{
+	glm::vec3 color = glm::vec3( 1.0f );
+
+	glm::vec3 point1 = glm::vec3( maxX, 0.0f, maxZ );
+	glm::vec3 point2 = glm::vec3( maxX, 0.0f, minZ );
+	glm::vec3 point3 = glm::vec3( minX, 0.0f, minZ );
+	glm::vec3 point4 = glm::vec3( minX, 0.0f, maxZ );
+	
+	glm::vec3 point5 = glm::vec3( maxX, 1.0f, maxZ );
+	glm::vec3 point6 = glm::vec3( maxX, 1.0f, minZ );
+	glm::vec3 point7 = glm::vec3( minX, 1.0f, minZ );
+	glm::vec3 point8 = glm::vec3( minX, 1.0f, maxZ );
+
+	::g_pDebugRenderer->addLine( point1, point2, color, true );
+	::g_pDebugRenderer->addLine( point2, point3, color, true );
+	::g_pDebugRenderer->addLine( point3, point4, color, true );
+	::g_pDebugRenderer->addLine( point4, point1, color, true );
+														
+	::g_pDebugRenderer->addLine( point5, point6, color, true );
+	::g_pDebugRenderer->addLine( point6, point7, color, true );
+	::g_pDebugRenderer->addLine( point7, point8, color, true );
+	::g_pDebugRenderer->addLine( point8, point5, color, true );
+														
+	::g_pDebugRenderer->addLine( point1, point5, color, true );
+	::g_pDebugRenderer->addLine( point2, point6, color, true );
+	::g_pDebugRenderer->addLine( point3, point7, color, true );
+	::g_pDebugRenderer->addLine( point4, point8, color, true );
+}
+
+void checkBoundaries( cGameObject* pTheGO )
+{
+	if( pTheGO->position.x > maxX ) pTheGO->position.x = minX;
+	if( pTheGO->position.x < minX ) pTheGO->position.x = maxX;
+	if( pTheGO->position.z > maxZ ) pTheGO->position.z = minZ;
+	if( pTheGO->position.z < minZ ) pTheGO->position.z = maxZ;
+}
 
 int main( void )
 {
@@ -384,7 +410,7 @@ int main( void )
 	{
 		std::cout << "Texture is loaded! Hazzah!" << std::endl;
 	}
-	::g_pTextureManager->Create2DTextureFromBMPFile( "scarry.bmp", true );
+	::g_pTextureManager->Create2DTextureFromBMPFile( "scary.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "meeseeks.bmp", true );		
 	::g_pTextureManager->Create2DTextureFromBMPFile( "moon.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "red.bmp", true );	
@@ -450,6 +476,8 @@ int main( void )
 
 	// Gets the "current" time "tick" or "step"
 	double lastTimeStep = glfwGetTime();
+
+	drawRange();
 
 	// Main game or application loop
 	while( !glfwWindowShouldClose( window ) )
@@ -549,19 +577,13 @@ int main( void )
 		{
 			cGameObject* pTheGO = ::g_vecGameObjects[index];
 
+			checkBoundaries( pTheGO );
+
 			DrawObject( pTheGO );
 
 			if( pTheGO->type == eTypeOfGO::CHARACTER &&
 				pTheGO->team == eTeam::ENEMY )
 			{
-
-				//std::cout << "ID " << pTheGO->getUniqueID()
-				//	<< " position: "
-				//	<< pTheGO->position.x << ", "
-				//	<< pTheGO->position.x << ", "
-				//	<< pTheGO->position.z
-				//	<< std::endl;
-
 				cGameObject* tagCircleGO = new cGameObject();
 				tagCircleGO->meshName = "circle";
 				tagCircleGO->textureBlend[0] = 1.0f;
@@ -572,31 +594,46 @@ int main( void )
 					case ANGRY :
 						{
 							if( pTheGO->behaviour == eEnemyBehaviour::SEEK )
+							{
 								tagCircleGO->textureNames[0] = "red.bmp";
-
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+							}
 							else if( pTheGO->behaviour == eEnemyBehaviour::FLEE )
+							{
 								tagCircleGO->textureNames[0] = "orange.bmp";
-
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.5f, 0.15f ) );
+							}
 							else
+							{
 								tagCircleGO->textureNames[0] = "white.bmp";
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+							}
 						}
 						break;
 
 					case CURIOUS :
 						{
 							if( pTheGO->behaviour == eEnemyBehaviour::APPROACH )
+							{
 								tagCircleGO->textureNames[0] = "blue.bmp";
-
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+							}
 							else if( pTheGO->behaviour == eEnemyBehaviour::EVADE )
+							{
 								tagCircleGO->textureNames[0] = "purple.bmp";
-
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.25f, 0.5f ) );
+							}
 							else
+							{
 								tagCircleGO->textureNames[0] = "gray.bmp";
+								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+							}
 						}
 						break;
 
 					case FOLLOWER :
 						tagCircleGO->textureNames[0] = "green.bmp";
+						::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
 						break;
 					
 					case UNAVAIABLE :
@@ -605,9 +642,6 @@ int main( void )
 				
 				DrawObject( tagCircleGO );
 				delete tagCircleGO;
-
-				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
-				//::g_pDebugRenderer->addLine( pTheGO->position, pTheGO->vel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
 				
 			}
 
@@ -617,9 +651,8 @@ int main( void )
 			//}
 
 		}//for ( int index = 0...
-		::g_pDebugRenderer->RenderDebugObjects( matView, matProjection );
 
-		
+		::g_pDebugRenderer->RenderDebugObjects( matView, matProjection );
 
 		std::stringstream ssTitle;
 		ssTitle << "AI: Project 2"
@@ -869,9 +902,9 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->enemyType = eEnemyType::UNAVAIABLE;
 			}
 
-			else if( pTempGO->meshName == "scarry" )
+			else if( pTempGO->meshName == "scary" )
 			{
-				pTempGO->textureNames[0] = "scarry.bmp";
+				pTempGO->textureNames[0] = "scary.bmp";
 				pTempGO->textureBlend[0] = 1.0f;
 				pTempGO->type = eTypeOfGO::CHARACTER;
 				pTempGO->team = eTeam::ENEMY;
