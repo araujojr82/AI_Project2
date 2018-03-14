@@ -10,6 +10,10 @@ public:
 	void updateAll( double deltaTime );
 	void reset();
 
+	float CIRCLE_DISTANCE = 4.0f;
+	float CIRCLE_RADIUS = 2.0f;
+	float ANGLE_CHANGE = 0.15f;
+
 private:
 	void update( cGameObject* pTheGO, double deltaTime );
 

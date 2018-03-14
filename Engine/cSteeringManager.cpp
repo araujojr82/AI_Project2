@@ -5,10 +5,6 @@
 
 extern float generateRandomNumber( float min, float max );
 
-extern float CIRCLE_DISTANCE;
-extern float CIRCLE_RADIUS;
-extern float ANGLE_CHANGE;
-
 extern cDebugRenderer* g_pDebugRenderer;
 
 static const float MAX_FORCE = 40.0f; // 5.4f; //10.0f;
@@ -324,7 +320,7 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 
 	wanderForce = circleCenter + displacement;
 
-	wanderForce = scaleVector( wanderForce, ( pTheGO->maxVel / 200 ) );
+	wanderForce = scaleVector( wanderForce, pTheGO->maxVel );
 
 	glm::vec3 displacementPos = displacement + circleCenter + pTheGO->position;
 	glm::vec3 circleCenterPos = circleCenter + pTheGO->position;

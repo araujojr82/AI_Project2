@@ -37,13 +37,9 @@
 #include "commands\cCommandScheduler.h"
 #include "commands\cComMoveTo.h"
 
-#include "cSteeringManager.h"
+//#include "cSteeringManager.h"
 
 cSteeringManager* g_pSteeringManager = NULL;
-
-float CIRCLE_DISTANCE = 4.0f;
-float CIRCLE_RADIUS = 2.0f;
-float ANGLE_CHANGE = 0.15f;
 
 extern bool MOVING_FORWARD;
 extern bool MOVING_BACKWARD;
@@ -623,14 +619,16 @@ int main( void )
 		}//for ( int index = 0...
 		::g_pDebugRenderer->RenderDebugObjects( matView, matProjection );
 
+		
+
 		std::stringstream ssTitle;
 		ssTitle << "AI: Project 2"
-			<< "Circle Distance: "
-			<< CIRCLE_DISTANCE
+			<< "Circle Distance: "						
+			<< ::g_pSteeringManager->CIRCLE_DISTANCE
 			<< " Circle Radius: "
-			<< CIRCLE_RADIUS
+			<< ::g_pSteeringManager->CIRCLE_RADIUS
 			<< " Angle Change: "
-			<< ANGLE_CHANGE;
+			<< ::g_pSteeringManager->ANGLE_CHANGE;
 			//<< "Camera Position (xyz): "
 			//<< ::g_pTheMouseCamera->Position.x << ", "
 			//<< ::g_pTheMouseCamera->Position.y << ", "

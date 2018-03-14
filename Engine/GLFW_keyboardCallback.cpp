@@ -3,9 +3,7 @@
 
 #include <iostream>
 
-extern float CIRCLE_DISTANCE;
-extern float CIRCLE_RADIUS;
-extern float ANGLE_CHANGE;
+extern cSteeringManager* g_pSteeringManager;
 
 bool isShiftKeyDown( int mods, bool bByItself = true );
 bool isCtrlKeyDown( int mods, bool bByItself = true );
@@ -112,7 +110,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// Turn camera 
-				CIRCLE_RADIUS *= 0.95f;
+				::g_pSteeringManager->CIRCLE_RADIUS *= 0.95f;
 				
 			}
 		}
@@ -132,7 +130,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// Turn camera 
-				CIRCLE_RADIUS *= 1.05f;
+				::g_pSteeringManager->CIRCLE_RADIUS *= 1.05f;
 			}
 		}
 		break;
@@ -150,7 +148,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// Pitch down
-				CIRCLE_DISTANCE *= 1.05f;
+				::g_pSteeringManager->CIRCLE_DISTANCE *= 1.05f;
 			}
 		}
 		break;
@@ -168,7 +166,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// Pitch down
-				CIRCLE_DISTANCE *= 0.95f;
+				::g_pSteeringManager->CIRCLE_DISTANCE *= 0.95f;
 			}
 		}
 		break;
@@ -187,7 +185,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// "roll" left (counter-clockwise)
-				ANGLE_CHANGE *= 0.95f;
+				::g_pSteeringManager->ANGLE_CHANGE *= 0.95f;
 			}
 		}
 		break;
@@ -206,7 +204,7 @@ glm::vec3 movement = glm::vec3( 0.0f );
 			}
 			else
 			{	// "roll" left (counter-clockwise)
-				ANGLE_CHANGE *= 1.05f;
+				::g_pSteeringManager->ANGLE_CHANGE *= 1.05f;
 			}
 		}
 		break;

@@ -12,6 +12,7 @@
 #include "cLightManager.h"
 //#include "cModelAssetLoader.h"
 #include "cMouseCamera.h"
+#include "cSteeringManager.h"
 
 // Remember to #include <vector>...
 extern std::vector< cGameObject* >  g_vecGameObjects;
