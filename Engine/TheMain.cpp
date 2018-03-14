@@ -218,25 +218,75 @@ void move_player( double deltaTime )
 	return;
 }
 
-//void drawRuler()
-//{
-//	glm::vec3 color = glm::vec3( 1.0f );
-//
-//	glm::vec3 thePoint = glm::vec3( 0.0f );
-//	glm::vec3 thePointUp = glm::vec3( 0.0f );
-//
-//	::g_pDebugRenderer->addLine( glm::vec3( 0.0f, 0.0f, 0.0f ), glm::vec3( 15.0f, 0.0f, 0.0f ), color, false );
-//	
-//	for( int x = 0; x <= 15; x++ )
-//	{
-//		thePoint.x = ( float )x;
-//		thePointUp.x = ( float )x;
-//		thePointUp.z = 1.0f;
-//
-//		::g_pDebugRenderer->addLine( thePoint, thePointUp, color, false );	
-//	}
-//
-//}
+void drawTagCircle( cGameObject* pTheGO )
+{
+	cGameObject* tagCircleGO = new cGameObject();
+	tagCircleGO->meshName = "circle";
+	tagCircleGO->textureBlend[0] = 1.0f;
+	tagCircleGO->position = pTheGO->position;
+
+	switch( pTheGO->enemyType )
+	{
+		case ANGRY:
+		{
+			if( pTheGO->behaviour == eEnemyBehaviour::SEEK )
+			{
+				tagCircleGO->textureNames[0] = "red.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+			}
+			else if( pTheGO->behaviour == eEnemyBehaviour::FLEE )
+			{
+				tagCircleGO->textureNames[0] = "orange.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.5f, 0.15f ) );
+			}
+			else
+			{
+				tagCircleGO->textureNames[0] = "white.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+			}
+		}
+		break;
+
+		case CURIOUS:
+		{
+			if( pTheGO->behaviour == eEnemyBehaviour::APPROACH )
+			{
+				tagCircleGO->textureNames[0] = "blue.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+			}
+			else if( pTheGO->behaviour == eEnemyBehaviour::EVADE )
+			{
+				tagCircleGO->textureNames[0] = "purple.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.25f, 0.5f ) );
+			}
+			else
+			{
+				tagCircleGO->textureNames[0] = "gray.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+			}
+		}
+		break;
+
+		case FOLLOWER:
+			if( pTheGO->behaviour == eEnemyBehaviour::SEEK )
+			{
+				tagCircleGO->textureNames[0] = "green.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+			}
+			else
+			{
+				tagCircleGO->textureNames[0] = "yellow.bmp";
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 1.0f, 0.0f ) );
+			}
+			break;
+
+		case UNAVAIABLE:
+			break;
+	}
+
+	DrawObject( tagCircleGO );
+	delete tagCircleGO;
+}
 
 void drawRange()
 {
@@ -410,6 +460,7 @@ int main( void )
 	{
 		std::cout << "Texture is loaded! Hazzah!" << std::endl;
 	}
+	::g_pTextureManager->Create2DTextureFromBMPFile( "morty.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "scary.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "meeseeks.bmp", true );		
 	::g_pTextureManager->Create2DTextureFromBMPFile( "moon.bmp", true );
@@ -420,7 +471,7 @@ int main( void )
 	::g_pTextureManager->Create2DTextureFromBMPFile( "purple.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "gray.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "green.bmp", true );
-	
+	::g_pTextureManager->Create2DTextureFromBMPFile( "yellow.bmp", true );
 	
 	//::g_pTextureManager->SetBasePath( "assets/textures/skybox/" );
 	//if( !::g_pTextureManager->CreateNewCubeTextureFromBMPFiles(
@@ -584,65 +635,7 @@ int main( void )
 			if( pTheGO->type == eTypeOfGO::CHARACTER &&
 				pTheGO->team == eTeam::ENEMY )
 			{
-				cGameObject* tagCircleGO = new cGameObject();
-				tagCircleGO->meshName = "circle";
-				tagCircleGO->textureBlend[0] = 1.0f;
-				tagCircleGO->position = pTheGO->position;
-
-				switch( pTheGO->enemyType )
-				{
-					case ANGRY :
-						{
-							if( pTheGO->behaviour == eEnemyBehaviour::SEEK )
-							{
-								tagCircleGO->textureNames[0] = "red.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
-							}
-							else if( pTheGO->behaviour == eEnemyBehaviour::FLEE )
-							{
-								tagCircleGO->textureNames[0] = "orange.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.5f, 0.15f ) );
-							}
-							else
-							{
-								tagCircleGO->textureNames[0] = "white.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 1.0f, 1.0f ) );
-							}
-						}
-						break;
-
-					case CURIOUS :
-						{
-							if( pTheGO->behaviour == eEnemyBehaviour::APPROACH )
-							{
-								tagCircleGO->textureNames[0] = "blue.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 0.0f, 1.0f ) );
-							}
-							else if( pTheGO->behaviour == eEnemyBehaviour::EVADE )
-							{
-								tagCircleGO->textureNames[0] = "purple.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.25f, 0.5f ) );
-							}
-							else
-							{
-								tagCircleGO->textureNames[0] = "gray.bmp";
-								::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.5f, 0.5f, 0.5f ) );
-							}
-						}
-						break;
-
-					case FOLLOWER :
-						tagCircleGO->textureNames[0] = "green.bmp";
-						::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-						break;
-					
-					case UNAVAIABLE :
-						break;
-				}
-				
-				DrawObject( tagCircleGO );
-				delete tagCircleGO;
-				
+				drawTagCircle( pTheGO );
 			}
 
 			//if( pTheGO->meshName == "rick" )
@@ -912,6 +905,18 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->range = 6.0f;
 				pTempGO->health = 100.0f;
 				pTempGO->maxVel = 1.5f;
+			}
+
+			else if( pTempGO->meshName == "morty" )
+			{
+				pTempGO->textureNames[0] = "morty.bmp";
+				pTempGO->textureBlend[0] = 1.0f;
+				pTempGO->type = eTypeOfGO::CHARACTER;
+				pTempGO->team = eTeam::ENEMY;
+				pTempGO->enemyType = eEnemyType::FOLLOWER;
+				pTempGO->range = 8.0f;
+				pTempGO->health = 100.0f;
+				pTempGO->maxVel = 1.0f;
 			}
 				
 			else if( pTempGO->meshName == "meeseeks" )
