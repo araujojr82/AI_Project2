@@ -216,42 +216,42 @@ void move_player( double deltaTime )
 	return;
 }
 
-void addCircleToDebugRenderer( glm::vec3 position, float range, glm::vec3 color )
-{
-	glm::vec3 point0 = glm::vec3( position.x, 0.0f, position.z + range );
-	glm::vec3 point3 = glm::vec3( position.x + range, 0.0f, position.z );
-	glm::vec3 point6 = glm::vec3( position.x, 0.0f, position.z - range );
-	glm::vec3 point9 = glm::vec3( position.x - range, 0.0f, position.z );
-
-	float x30 = glm::cos( glm::radians( 30.0f ) ) * range;
-	float z30 = glm::sin( glm::radians( 30.0f ) ) * range;
-	float x60 = glm::cos( glm::radians( 60.0f ) ) * range;
-	float z60 = glm::sin( glm::radians( 60.0f ) ) * range;
-
-	glm::vec3 point1 = glm::vec3( position.x + x60, 0.0f, position.z + z60 );
-	glm::vec3 point2 = glm::vec3( position.x + x30, 0.0f, position.z + z30 );
-	glm::vec3 point4 = glm::vec3( position.x + x30, 0.0f, position.z - z30 );
-	glm::vec3 point5 = glm::vec3( position.x + x60, 0.0f, position.z - z60 );
-	glm::vec3 point7 = glm::vec3( position.x - x60, 0.0f, position.z - z60 );
-	glm::vec3 point8 = glm::vec3( position.x - x30, 0.0f, position.z - z30 );
-	glm::vec3 point10 = glm::vec3( position.x - x30, 0.0f, position.z + z30 );
-	glm::vec3 point11 = glm::vec3( position.x - x60, 0.0f, position.z + z60 );
-
-	::g_pDebugRenderer->addLine( point0, point1, color, false );
-	::g_pDebugRenderer->addLine( point1, point2, color, false );
-	::g_pDebugRenderer->addLine( point2, point3, color, false );
-	::g_pDebugRenderer->addLine( point3, point4, color, false );
-	::g_pDebugRenderer->addLine( point4, point5, color, false );
-	::g_pDebugRenderer->addLine( point5, point6, color, false );
-	::g_pDebugRenderer->addLine( point6, point7, color, false );
-	::g_pDebugRenderer->addLine( point7, point8, color, false );
-	::g_pDebugRenderer->addLine( point8, point9, color, false );
-	::g_pDebugRenderer->addLine( point9, point10, color, false );
-	::g_pDebugRenderer->addLine( point10, point11, color, false );
-	::g_pDebugRenderer->addLine( point11, point0, color, false );
-
-	return;
-}
+//void addCircleToDebugRenderer( glm::vec3 position, float range, glm::vec3 color )
+//{
+//	glm::vec3 point0 = glm::vec3( position.x, 0.0f, position.z + range );
+//	glm::vec3 point3 = glm::vec3( position.x + range, 0.0f, position.z );
+//	glm::vec3 point6 = glm::vec3( position.x, 0.0f, position.z - range );
+//	glm::vec3 point9 = glm::vec3( position.x - range, 0.0f, position.z );
+//
+//	float x30 = glm::cos( glm::radians( 30.0f ) ) * range;
+//	float z30 = glm::sin( glm::radians( 30.0f ) ) * range;
+//	float x60 = glm::cos( glm::radians( 60.0f ) ) * range;
+//	float z60 = glm::sin( glm::radians( 60.0f ) ) * range;
+//
+//	glm::vec3 point1 = glm::vec3( position.x + x60, 0.0f, position.z + z60 );
+//	glm::vec3 point2 = glm::vec3( position.x + x30, 0.0f, position.z + z30 );
+//	glm::vec3 point4 = glm::vec3( position.x + x30, 0.0f, position.z - z30 );
+//	glm::vec3 point5 = glm::vec3( position.x + x60, 0.0f, position.z - z60 );
+//	glm::vec3 point7 = glm::vec3( position.x - x60, 0.0f, position.z - z60 );
+//	glm::vec3 point8 = glm::vec3( position.x - x30, 0.0f, position.z - z30 );
+//	glm::vec3 point10 = glm::vec3( position.x - x30, 0.0f, position.z + z30 );
+//	glm::vec3 point11 = glm::vec3( position.x - x60, 0.0f, position.z + z60 );
+//
+//	::g_pDebugRenderer->addLine( point0, point1, color, false );
+//	::g_pDebugRenderer->addLine( point1, point2, color, false );
+//	::g_pDebugRenderer->addLine( point2, point3, color, false );
+//	::g_pDebugRenderer->addLine( point3, point4, color, false );
+//	::g_pDebugRenderer->addLine( point4, point5, color, false );
+//	::g_pDebugRenderer->addLine( point5, point6, color, false );
+//	::g_pDebugRenderer->addLine( point6, point7, color, false );
+//	::g_pDebugRenderer->addLine( point7, point8, color, false );
+//	::g_pDebugRenderer->addLine( point8, point9, color, false );
+//	::g_pDebugRenderer->addLine( point9, point10, color, false );
+//	::g_pDebugRenderer->addLine( point10, point11, color, false );
+//	::g_pDebugRenderer->addLine( point11, point0, color, false );
+//
+//	return;
+//}
 
 
 int main( void )
@@ -610,7 +610,7 @@ int main( void )
 				DrawObject( tagCircleGO );
 				delete tagCircleGO;
 
-				addCircleToDebugRenderer( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+				::g_pDebugRenderer->addCircle( pTheGO->position, pTheGO->range, glm::vec3( 1.0f, 0.0f, 0.0f ) );
 				//::g_pDebugRenderer->addLine( pTheGO->position, pTheGO->vel, glm::vec3( 1.0f, 0.0f, 0.0f ), false );
 				
 			}

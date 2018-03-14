@@ -71,6 +71,7 @@ public:
 
 	void addTriangle(glm::vec3 v1XYZ, glm::vec3 v2XYZ, glm::vec3 v3XYZ, glm::vec3 colour, bool bPersist = false);
 	void addTriangle(drTri &tri);
+	void addCircle( glm::vec3 position, float range, glm::vec3 color );
 	void addLine(glm::vec3 startXYZ, glm::vec3 endXYZ, glm::vec3 colour, bool bPersist = false);
 	void addLine(drLine &line);
 	void addPoint(glm::vec3 xyz, glm::vec3 colour, bool bPersist = false);

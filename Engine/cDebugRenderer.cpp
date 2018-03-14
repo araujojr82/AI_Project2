@@ -542,6 +542,43 @@ void cDebugRenderer::addTriangle(drTri &tri)
 	return;
 }
 
+void cDebugRenderer::addCircle( glm::vec3 position, float range, glm::vec3 color )
+{
+	glm::vec3 point0 = glm::vec3( position.x, 0.0f, position.z + range );
+	glm::vec3 point3 = glm::vec3( position.x + range, 0.0f, position.z );
+	glm::vec3 point6 = glm::vec3( position.x, 0.0f, position.z - range );
+	glm::vec3 point9 = glm::vec3( position.x - range, 0.0f, position.z );
+
+	float x30 = glm::cos( glm::radians( 30.0f ) ) * range;
+	float z30 = glm::sin( glm::radians( 30.0f ) ) * range;
+	float x60 = glm::cos( glm::radians( 60.0f ) ) * range;
+	float z60 = glm::sin( glm::radians( 60.0f ) ) * range;
+
+	glm::vec3 point1 = glm::vec3( position.x + x60, 0.0f, position.z + z60 );
+	glm::vec3 point2 = glm::vec3( position.x + x30, 0.0f, position.z + z30 );
+	glm::vec3 point4 = glm::vec3( position.x + x30, 0.0f, position.z - z30 );
+	glm::vec3 point5 = glm::vec3( position.x + x60, 0.0f, position.z - z60 );
+	glm::vec3 point7 = glm::vec3( position.x - x60, 0.0f, position.z - z60 );
+	glm::vec3 point8 = glm::vec3( position.x - x30, 0.0f, position.z - z30 );
+	glm::vec3 point10 = glm::vec3( position.x - x30, 0.0f, position.z + z30 );
+	glm::vec3 point11 = glm::vec3( position.x - x60, 0.0f, position.z + z60 );
+
+	this->addLine( point0, point1, color, false );
+	this->addLine( point1, point2, color, false );
+	this->addLine( point2, point3, color, false );
+	this->addLine( point3, point4, color, false );
+	this->addLine( point4, point5, color, false );
+	this->addLine( point5, point6, color, false );
+	this->addLine( point6, point7, color, false );
+	this->addLine( point7, point8, color, false );
+	this->addLine( point8, point9, color, false );
+	this->addLine( point9, point10, color, false );
+	this->addLine( point10, point11, color, false );
+	this->addLine( point11, point0, color, false );
+
+	return;
+}
+
 void cDebugRenderer::addLine(glm::vec3 startXYZ, glm::vec3 endXYZ, glm::vec3 colour, bool bPersist /*=false*/)
 {
 	drLine tempLine(startXYZ, endXYZ, colour, bPersist);

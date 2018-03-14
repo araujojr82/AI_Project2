@@ -9,7 +9,6 @@ extern float CIRCLE_DISTANCE;
 extern float CIRCLE_RADIUS;
 extern float ANGLE_CHANGE;
 
-extern void addCircleToDebugRenderer( glm::vec3 position, float range, glm::vec3 color );
 extern cDebugRenderer* g_pDebugRenderer;
 
 static const float MAX_FORCE = 40.0f; // 5.4f; //10.0f;
@@ -265,7 +264,7 @@ glm::vec3 cSteeringManager::seek( cGameObject* pTheGO, glm::vec3 targetDestinati
 	float distance = glm::length( targetVec );
 	targetVec = glm::normalize( targetVec );
 
-	addCircleToDebugRenderer( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+	::g_pDebugRenderer->addCircle( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
 
 	if( distance <= slowingRadius )
 	{
@@ -331,7 +330,7 @@ glm::vec3 cSteeringManager::wander( cGameObject* pTheGO )
 	glm::vec3 circleCenterPos = circleCenter + pTheGO->position;
 
 	::g_pDebugRenderer->addLine( pTheGO->position, circleCenterPos, glm::vec3( 1.0f, 1.0f, 0.0f ), false );
-	addCircleToDebugRenderer( circleCenterPos, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
+	::g_pDebugRenderer->addCircle( circleCenterPos, CIRCLE_RADIUS, glm::vec3( 1.0f, 1.0f, 0.0f ) );
 	::g_pDebugRenderer->addLine( circleCenterPos, displacementPos, glm::vec3( 0.0f, 1.0f, 1.0f ), false );
 	::g_pDebugRenderer->addLine( pTheGO->position, displacementPos, glm::vec3( 0.0f, 1.0f, 0.0f ), false );
 
@@ -383,7 +382,7 @@ glm::vec3 cSteeringManager::approach( cGameObject* pTheGO, glm::vec3 targetDesti
 	float distance = glm::length( targetVec );
 	targetVec = glm::normalize( targetVec );
 
-	addCircleToDebugRenderer( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+	::g_pDebugRenderer->addCircle( targetDestination, slowingRadius, glm::vec3( 1.0f, 1.0f, 1.0f ) );
 
 	if( distance <= slowingRadius )
 	{
