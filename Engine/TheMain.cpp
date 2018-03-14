@@ -218,6 +218,16 @@ void move_player( double deltaTime )
 	return;
 }
 
+void drawCapsule( glm::vec3 position )
+{
+	cGameObject* capsuleGO = new cGameObject();
+	capsuleGO->meshName = "capsule";
+	capsuleGO->bIsWireFrame = true;
+	capsuleGO->position = position;
+	DrawObject( capsuleGO );
+	delete capsuleGO;
+}
+
 void drawTagCircle( cGameObject* pTheGO )
 {
 	cGameObject* tagCircleGO = new cGameObject();
@@ -324,6 +334,30 @@ void checkBoundaries( cGameObject* pTheGO )
 	if( pTheGO->position.x < minX ) pTheGO->position.x = maxX;
 	if( pTheGO->position.z > maxZ ) pTheGO->position.z = minZ;
 	if( pTheGO->position.z < minZ ) pTheGO->position.z = maxZ;
+}
+
+
+void collisionCheck()
+{
+	unsigned int sizeOfVector = ( unsigned int )g_vecGameObjects.size();
+
+	for( int i = 0; i != sizeOfVector; i++ )
+	{
+		cGameObject* pTheOtherGO = ::g_vecGameObjects[i];
+		if( pTheOtherGO->type != eTypeOfGO::CHARACTER ) continue; 
+		
+		if( ::g_pThePlayerGO == pTheOtherGO ) continue;	// Don't test itself
+		
+		float distance = glm::distance( ::g_pThePlayerGO->position, pTheOtherGO->position );
+		if( distance < 0.5f )	//They are overlapping
+		{
+			//Decrease player health by 0.01
+			::g_pThePlayerGO->health -= 0.1f;
+			if( ::g_pThePlayerGO->health < 0 ) ::g_pThePlayerGO->health = 0.0f;
+		}
+	}
+
+	return;
 }
 
 int main( void )
@@ -632,12 +666,18 @@ int main( void )
 
 			DrawObject( pTheGO );
 
-			if( pTheGO->type == eTypeOfGO::CHARACTER &&
-				pTheGO->team == eTeam::ENEMY )
+			if( pTheGO->type == eTypeOfGO::CHARACTER )
 			{
-				drawTagCircle( pTheGO );
+				if( pTheGO->team == eTeam::ENEMY )
+				{
+					drawTagCircle( pTheGO );
+				}
+				else
+				{
+					::g_pDebugRenderer->addCircle( pTheGO->position, 0.25f, glm::vec3( 1.0f, 1.0f, 1.0f ) );
+				}
+				//drawCapsule( pTheGO->position );
 			}
-
 			//if( pTheGO->meshName == "rick" )
 			//{
 			//	addCircleToDebugRenderer( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
@@ -649,12 +689,13 @@ int main( void )
 
 		std::stringstream ssTitle;
 		ssTitle << "AI: Project 2"
-			<< "Circle Distance: "						
-			<< ::g_pSteeringManager->CIRCLE_DISTANCE
-			<< " Circle Radius: "
-			<< ::g_pSteeringManager->CIRCLE_RADIUS
-			<< " Angle Change: "
-			<< ::g_pSteeringManager->ANGLE_CHANGE;
+			<< "Player Health: " << ::g_pThePlayerGO->health;
+			//<< "Circle Distance: "						
+			//<< ::g_pSteeringManager->CIRCLE_DISTANCE
+			//<< " Circle Radius: "
+			//<< ::g_pSteeringManager->CIRCLE_RADIUS
+			//<< " Angle Change: "
+			//<< ::g_pSteeringManager->ANGLE_CHANGE;
 			//<< "Camera Position (xyz): "
 			//<< ::g_pTheMouseCamera->Position.x << ", "
 			//<< ::g_pTheMouseCamera->Position.y << ", "
@@ -679,6 +720,8 @@ int main( void )
 		//updateAllObjects( deltaTime );
 		::g_pSteeringManager->updateAll( deltaTime );
 
+		// Check for collisions with the player and update it's health
+		collisionCheck();
 
 		// Update camera
 		//ProcessCameraInput( window, deltaTime );
@@ -1211,7 +1254,6 @@ void DrawObject( cGameObject* pTheGO )
 	//	//glBindTexture( GL_TEXTURE_2D, skyBoxTextueID );
 	//	glBindTexture( GL_TEXTURE_CUBE_MAP, skyBoxTextueID );
 
-
 	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1223,11 +1265,7 @@ void DrawObject( cGameObject* pTheGO )
 
 	//}//if (pTheGO->bIsSkyBoxObject)
 
-
-	 //			glPolygonMode( GL_FRONT_AND_BACK, GL_POINT );
-	 //			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	//if( pTheGO->bIsWireFrame )
-	if( g_bIsWireframe )
+	if( g_bIsWireframe || pTheGO->bIsWireFrame )
 	{
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );	// Default
 //		glEnable(GL_DEPTH_TEST);		// Test for z and store in z buffer
