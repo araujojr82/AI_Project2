@@ -37,8 +37,6 @@
 #include "commands\cCommandScheduler.h"
 #include "commands\cComMoveTo.h"
 
-//#include "cSteeringManager.h"
-
 // The Game Boundaries:
 const float maxX = 15.0f;
 const float minX = -15.0f;
@@ -82,9 +80,6 @@ cLightManager*		g_pLightManager;
 cBasicTextureManager*	g_pTextureManager = 0;
 
 cDebugRenderer*			g_pDebugRenderer = 0;
-
-// This contains the AABB grid for the terrain...
-//cAABBBroadPhase* g_terrainAABBBroadPhase = 0;
 
 // Other uniforms:
 GLint uniLoc_materialDiffuse = -1;
@@ -131,12 +126,10 @@ void loadObjectsFile( std::string fileName );
 sMeshparameters parseMeshLine( std::ifstream &source );
 void loadMeshesFile( std::string fileName, GLint ShaderID );
 void loadLightObjects();
-//void PhysicsStep( double deltaTime );
 void updateAllObjects( double deltaTime );
 void newPlayerGO();
 void DrawObject( cGameObject* pTheGO );
 float generateRandomNumber( float min, float max );
-//void updateCamera( double deltaTime );
 void mouse_callback( GLFWwindow* window, double xpos, double ypos );
 void scroll_callback( GLFWwindow* window, double xoffset, double yoffset );
 void ProcessCameraInput( GLFWwindow *window, double deltaTime );
@@ -465,17 +458,13 @@ int main( void )
 	{
 		::g_pLightManager->vecLights[0].position = glm::vec3( 50.0f, 50.0f, 50.0f );
 		::g_pLightManager->vecLights[0].attenuation.y = 0.03f;	// Linear
-		//::g_pLightManager->vecLights[0].attenuation.y = 0.6f;		// Change the linear attenuation
-		//::g_pLightManager->vecLights[0].attenuation.z = 0.005f;
 
 		::g_pLightManager->vecLights[1].position = glm::vec3( 50.0f, -50.0f, 50.0f );
-		//::g_pLightManager->vecLights[1].attenuation.y = 0.02f;	// Linear
 
 		::g_pLightManager->vecLights[2].position = glm::vec3( -50.0f, -50.0f, 50.0f );
 		::g_pLightManager->vecLights[1].attenuation.y = 0.01f;	// Linear
 
 		::g_pLightManager->vecLights[3].position = glm::vec3( -50.0f, 50.0f, 50.0f );
-		//::g_pLightManager->vecLights[1].attenuation.y = 0.0f;	// Linear
 		
 	}
 	//=========================================================
@@ -506,49 +495,11 @@ int main( void )
 	::g_pTextureManager->Create2DTextureFromBMPFile( "gray.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "green.bmp", true );
 	::g_pTextureManager->Create2DTextureFromBMPFile( "yellow.bmp", true );
-	
-	//::g_pTextureManager->SetBasePath( "assets/textures/skybox/" );
-	//if( !::g_pTextureManager->CreateNewCubeTextureFromBMPFiles(
-	//	"space",
-	//	"SpaceBox_right1_posX.bmp",
-	//	"SpaceBox_left2_negX.bmp",
-	//	"SpaceBox_top3_posY.bmp",
-	//	"SpaceBox_bottom4_negY.bmp",
-	//	"SpaceBox_front5_posZ.bmp",
-	//	"SpaceBox_back6_negZ.bmp" ) )
-	//{
-	//	std::cout << "Didn't load skybox" << std::endl;
-	//}
-	//else
-	//{
-	//	std::cout << "Skybox Texture is loaded! Hazzah!" << std::endl;
-	//}
-
-	//// THE AABB GENERATION --------------------------
-
-	//// About the generate the AABB for the terrain
-	//::g_terrainAABBBroadPhase = new cAABBBroadPhase();
-	//// Perhaps you'd like something more sophisticated than this...
-	//::g_terrainAABBBroadPhase->pDebugRenderer = ::g_pDebugRenderer;
-	//
-	//cMesh terrainMesh;
-	//
-	//if( ::g_pVAOManager->lookupMeshFromName( "map", terrainMesh ) )
-	//{
-	//	std::cout << "Generating the terrain AABB grid. This will take a moment..." << std::endl;
-
-	//	::g_terrainAABBBroadPhase->genAABBGridFromMesh( terrainMesh );
-
-	//}
-	//// END OF THE AABB GENERATION -------------------
 
 	::g_pSteeringManager = new cSteeringManager();
 
 	::g_pThePlayerGO = findObjectByFriendlyName( PLAYERNAME, ::g_vecGameObjects );
 
-	//::g_pTheCamera = new cCamera();
-	//::g_pTheCamera->setCameraMode( cCamera::FLY_CAMERA );	
-	//::g_pTheCamera->eye = glm::vec3( -5.0f, -5.0f, -25.0f );
 
 	glm::vec3 camPos = ::g_pThePlayerGO->position + glm::vec3( 0.0f, 6.0f, 12.f );
 	glm::vec3 camUp = glm::vec3( 0.0f, 1.0f, 0.0f );
@@ -610,24 +561,6 @@ int main( void )
 
 		// Set ALL texture units and binding for ENTIRE SCENE (is faster)
 		{
-		//	// 0 
-		//	glActiveTexture( GL_TEXTURE0 );
-		//	glBindTexture( GL_TEXTURE_2D,
-		//		::g_pTextureManager->getTextureIDFromName( "vegetation_hedge_22.bmp" ) );
-		//	//::g_pTextureManager->getTextureIDFromName(pTheGO->textureNames[0]));
-		//// 1
-		//	glActiveTexture( GL_TEXTURE1 );
-		//	glBindTexture( GL_TEXTURE_2D,
-		//		::g_pTextureManager->getTextureIDFromName( "Rough_rock_015_COLOR.bmp" ) );
-		//	// 2..  and so on... 
-		//	glActiveTexture( GL_TEXTURE2 );
-		//	glBindTexture( GL_TEXTURE_2D,
-		//		::g_pTextureManager->getTextureIDFromName( "Red_Marble_001_COLOR.bmp" ) );
-
-		//	glActiveTexture( GL_TEXTURE2 );
-		//	glBindTexture( GL_TEXTURE_2D,
-		//		::g_pTextureManager->getTextureIDFromName( "checkered.bmp" ) );
-
 			// Set sampler in the shader
 			// NOTE: You shouldn't be doing this during the draw call...
 			GLint curShaderID = ::g_pShaderManager->getIDFromFriendlyName( "mySexyShader" );
@@ -678,10 +611,6 @@ int main( void )
 				}
 				//drawCapsule( pTheGO->position );
 			}
-			//if( pTheGO->meshName == "rick" )
-			//{
-			//	addCircleToDebugRenderer( pTheGO->position, pTheGO->range, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-			//}
 
 		}//for ( int index = 0...
 
@@ -690,20 +619,6 @@ int main( void )
 		std::stringstream ssTitle;
 		ssTitle << "AI: Project 2"
 			<< "Player Health: " << ::g_pThePlayerGO->health;
-			//<< "Circle Distance: "						
-			//<< ::g_pSteeringManager->CIRCLE_DISTANCE
-			//<< " Circle Radius: "
-			//<< ::g_pSteeringManager->CIRCLE_RADIUS
-			//<< " Angle Change: "
-			//<< ::g_pSteeringManager->ANGLE_CHANGE;
-			//<< "Camera Position (xyz): "
-			//<< ::g_pTheMouseCamera->Position.x << ", "
-			//<< ::g_pTheMouseCamera->Position.y << ", "
-			//<< ::g_pTheMouseCamera->Position.z
-			//<< " - Yaw: "
-			//<< ::g_pTheMouseCamera->Yaw
-			//<< " - Pitch: "
-			//<< ::g_pTheMouseCamera->Pitch;
 
 		glfwSetWindowTitle( window, ssTitle.str().c_str() );
 
@@ -992,9 +907,6 @@ void loadObjectsFile( std::string fileName )
 				pTempGO->enemyType = eEnemyType::UNAVAIABLE;
 			}
 			
-
-			
-			
 			::g_vecGameObjects.push_back( pTempGO );
 		}
 	}
@@ -1148,8 +1060,6 @@ void DrawObject( cGameObject* pTheGO )
 	glm::mat4 postRotQuat = glm::mat4( pTheGO->qOrientation );
 	mModel = mModel * postRotQuat;
 
-	//mModel = mModel * trans * postRotQuat;
-
 	float finalScale = pTheGO->scale;
 
 	glm::mat4 matScale = glm::mat4x4( 1.0f );
@@ -1193,77 +1103,23 @@ void DrawObject( cGameObject* pTheGO )
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D,
 		::g_pTextureManager->getTextureIDFromName( pTheGO->textureNames[0] ) );
-	//::g_pTextureManager->getTextureIDFromName("Utah_Teapot_xyz_n_uv_Enterprise.bmp"));
-	// 1
+	
 	glActiveTexture( GL_TEXTURE1 );
 	glBindTexture( GL_TEXTURE_2D,
 		::g_pTextureManager->getTextureIDFromName( pTheGO->textureNames[1] ) );
-	//::g_pTextureManager->getTextureIDFromName("GuysOnSharkUnicorn.bmp"));
-	// 2..  and so on... 
-
+	
 	// Set sampler in the shader
 	// NOTE: You shouldn't be doing this during the draw call...
 	GLint curShaderID = ::g_pShaderManager->getIDFromFriendlyName( "mySexyShader" );
 	GLint textSampler00_ID = glGetUniformLocation( curShaderID, "myAmazingTexture00" );
 	GLint textSampler01_ID = glGetUniformLocation( curShaderID, "myAmazingTexture01" );
-	//// And so on (up to 10, or whatever number of textures)... 
-
+	
 	GLint textBlend00_ID = glGetUniformLocation( curShaderID, "textureBlend00" );
 	GLint textBlend01_ID = glGetUniformLocation( curShaderID, "textureBlend01" );
-
-	//// This connects the texture sampler to the texture units... 
-	//glUniform1i( textSampler00_ID, 0  );		// Enterprise
-	//glUniform1i( textSampler01_ID, 1  );		// GuysOnSharkUnicorn
-	// .. and so on
 
 	// And the blending values
 	glUniform1f( textBlend00_ID, pTheGO->textureBlend[0] );
 	glUniform1f( textBlend01_ID, pTheGO->textureBlend[1] );
-	// And so on...
-
-	//GLint isSkyBoxID = glGetUniformLocation( curShaderID, "isASkyBox" );
-	//glUniform1f( isSkyBoxID, 0.0f ); // OR GLFALSE
-
-	//// Is this the "skybox object" (a sphere, in our case)
-	//if( pTheGO->bIsSkyBoxObject )
-	//{
-	//	GLint cubeSampID = glGetUniformLocation( curShaderID, "skyBoxSampler" );
-
-	//	// Set the isSkyBox
-	//	glUniform1f( isSkyBoxID, GL_TRUE ); // OR GL_TRUE
-
-	//										//GLuint textureUnitNum = 8;	// Doesn't really matter which one // Texture units go from 0 to 79 (at least)
-	//										//glActiveTexture(textureUnitNum + GL_TEXTURE0);		// GL_TEXTURE0 = 33984
-	//	glActiveTexture( GL_TEXTURE0 );
-
-	//	// Set up the textures SAME AS WITH ANY OTHER TEXTURE
-	//	GLuint skyBoxTextueID = ::g_pTextureManager->getTextureIDFromName( "space" );
-
-	//	//glEnable( GL_TEXTURE_CUBE_MAP );
-	//	glGenTextures( 1, &skyBoxTextueID );
-
-	//	//// Set up the textures SAME AS WITH ANY OTHER TEXTURE
-	//	//GLuint skyBoxTextueID = ::g_pTextureManager->getTextureIDFromName("space");
-	//	// Texture binding... (i.e. set the 'active' texture
-	//	//GLuint textureUnitNum = 8;	// Doesn't really matter which one // Texture units go from 0 to 79 (at least)
-	//	//glActiveTexture(textureUnitNum + GL_TEXTURE0);		// GL_TEXTURE0 = 33984
-	//	// Connects texture UNIT to the texture
-
-	//	//glBindTexture(GL_TEXTURE_CUBE_MAP, skyBoxTextueID);
-
-	//	//glBindTexture( GL_TEXTURE_2D, skyBoxTextueID );
-	//	glBindTexture( GL_TEXTURE_CUBE_MAP, skyBoxTextueID );
-
-	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	//	//glTexParameteri( GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-
-	//	//// Set sampler to same texture UNIT
-	//	//glUniform1f(cubeSampID, textureUnitNum);
-
-	//}//if (pTheGO->bIsSkyBoxObject)
 
 	if( g_bIsWireframe || pTheGO->bIsWireFrame )
 	{
@@ -1322,21 +1178,6 @@ void scroll_callback( GLFWwindow* window, double xoffset, double zoffset )
 {
 	::g_pTheMouseCamera->ProcessMouseScroll( ( float )zoffset );
 }
-
-//void printCameraDetails()
-//{
-//	std::cout << "Camera Pos: "
-//		<< ::g_pTheMouseCamera->Position.x << ", "
-//		<< ::g_pTheMouseCamera->Position.y << ", "
-//		<< ::g_pTheMouseCamera->Position.z
-//		<< " | WorldUp: "
-//		<< ::g_pTheMouseCamera->WorldUp.x << ", "
-//		<< ::g_pTheMouseCamera->WorldUp.y << ", "
-//		<< ::g_pTheMouseCamera->WorldUp.z
-//		<< " | Yaw: " << ::g_pTheMouseCamera->Yaw
-//		<< " | Pitch: " << ::g_pTheMouseCamera->Pitch
-//		<< std::endl;
-//}
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
